@@ -1,0 +1,17 @@
+{
+  "name": "sass-autocompile",
+  "main": "./lib/sass-autocompile",
+  "version": "0.1.0",
+  "description": "Automatically compiles SASS files on save.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/armin-pfaeffle/sass-autocompile"
+  },
+  "license": "MIT",
+  "engines": {
+    "atom": ">=0.174.0 <2.0.0"
+  },
+  "dependencies": {
+    "mkdirp": "latest"
+  }
+}

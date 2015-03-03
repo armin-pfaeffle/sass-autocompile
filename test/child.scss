@@ -1,0 +1,11 @@
+// main: main.scss
+//
+.child {
+    padding: 10px;
+    }
+
+button {
+    color: white;
+}
+
+@import "child-child";

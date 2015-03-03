@@ -1,0 +1,16 @@
+// out: main.css
+// compress: true
+
+#main {
+    background-color: #f00;
+    color: #f00;
+    padding: 10px;
+    }
+
+
+
+.content {
+    color: #f00;
+    }
+
+@import "child";
