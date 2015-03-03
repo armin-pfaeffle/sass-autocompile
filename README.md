@@ -4,12 +4,12 @@ Automatically compiles SASS files on save.
 
 ---
 
-Inspired by [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](lohek), I have created a counterpart for SASS. This package automatically compiles your SASS file (file ending: `.scss`) when you save it.
+Inspired by [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](https://atom.io/users/lohek), I have created a counterpart for SASS. This package automatically compiles your SASS file (file ending: `.scss`) when you save it.
 
 
 ## Requirements
 
-At the moment, you can only use this package when you install [node.js](http://nodejs.org/) and [node-sass](http://nodejs.org/) on you system. It's important that you install node-sass globally `npm install node-sass -g`, so it's possible to access it via CLI.
+At the moment, you can only use this package when you install [node.js](http://nodejs.org/) and [node-sass](https://www.npmjs.com/package/node-sass) on you system. It's important that you install node-sass globally `npm install node-sass -g`, so it's possible to access it via CLI.
 
 The reason why sass-autocompile needs that is because node-sass is not compatible with atom shell in the current version (2.0.1), so it cannot be added as dependency. Probably that will change later, so you won't have to install node.js and node-sass additionally ‒ I have put it  the roadmap.
 
