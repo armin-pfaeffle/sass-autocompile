@@ -57,7 +57,9 @@ The special about this parameter is, that when you save a child file, the `index
 
 ## Discussion, issues, questions, feedback
 
-[Have a look at the discussion thread.](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233)
+[Please post issues on Github](https://github.com/armin-pfaeffle/sass-autocompile/issues).
+
+For questions and feeback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
 
 
 ## Roadmap
