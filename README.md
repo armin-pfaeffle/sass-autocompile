@@ -31,7 +31,7 @@ When you add th `out` parameter your SASS file is compiled to `main.css` in the 
 // out: ../css/main.css
 ```
 
-To additionally compress the output you have to add `compress: true`:
+To additionally compress the output you have to add `compress: true`, or you enable option [always compress](#always-compress):
 ```
 // out: ../css/main.css, compress: true
 ```
@@ -62,6 +62,16 @@ The special about this parameter is, that when you save a child file, the `index
 For other concerns like questions or feeback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
 
 
+## Options
+
+`Enabled`  
+You can use this option to disable auto compiling SASS file on save. This is especially useful when you migrate from CSS or LESS to SASS, having some errors in the SASS files and don't want to see a error message on each save.
+
+**Predefined shortcut**: `ctrl-alt-shift-s`
+
+`Always compress`  
+If enabled this option ensures that the output is compressed, even if you do **not** use the `compress` paramaeter in the first line.
+
 ## Roadmap
 
 - Add node-sass as dependency, so we do not need extra node.js and node-sass installation
@@ -69,4 +79,10 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
-- *03.03.2015*: Initial version
+**0.2.0 - 04.03.2015**
+- Added keymap with ctrl-alt-shift-s shortcut for toggling auto compile
+- Added option "enabled" for en-disabling auto compile
+- Added option "always compress"
+
+**0.1.0 - 03.03.2015**
+- Initial version.
