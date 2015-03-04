@@ -1,7 +1,7 @@
 {
   "name": "sass-autocompile",
   "main": "./lib/sass-autocompile",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Automatically compiles SASS files on save.",
   "repository": {
     "type": "git",
