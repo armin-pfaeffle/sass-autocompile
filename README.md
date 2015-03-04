@@ -55,11 +55,11 @@ Add the following comment to `main.scss` to enabled auto compilation on saving `
 The special about this parameter is, that when you save a child file, the `index.scss` is compiled, not the child file itself. So you can structure you SASS files, modify them and after saving, everything is compiled correctly.
 
 
-## Discussion, issues, questions, feedback
+## Issues, questions & feedback
 
 [Please post issues on Github](https://github.com/armin-pfaeffle/sass-autocompile/issues).
 
-For questions and feeback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
+For other concerns like questions or feeback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
 
 
 ## Roadmap
