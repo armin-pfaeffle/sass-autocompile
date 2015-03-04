@@ -30,6 +30,9 @@ class SassAutocompileView extends View
         @detach()
 
     compile: (editor) ->
+        if (!atom.config.get('sass-autocompile.enabled'))
+            return
+
         path = require 'path'
 
         filePath = editor.getUri()
@@ -100,6 +103,9 @@ class SassAutocompileView extends View
         compile = (params) =>
             if params.out is false
                 return
+
+            if atom.config.get('sass-autocompile.alwaysCompress')
+                params.compress = true
 
             outputStyle = if params.compress then 'compressed' else 'nested'
             newFile = path.resolve(path.dirname(params.file), params.out)
