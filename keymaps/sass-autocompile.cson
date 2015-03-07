@@ -10,9 +10,12 @@
 
 '.platform-darwin atom-workspace atom-text-editor:not(.mini)':
   'ctrl-cmd-shift-s': 'sass-autocompile:toggle-enabled'
+  'ctrl-cmd-shift-h': 'sass-autocompile:close-message-panel'
 
 '.platform-linux atom-workspace atom-text-editor:not(.mini)':
   'ctrl-alt-shift-s': 'sass-autocompile:toggle-enabled'
+  'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
 
 '.platform-win32 atom-workspace atom-text-editor:not(.mini)':
   'ctrl-alt-shift-s': 'sass-autocompile:toggle-enabled'
+  'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
