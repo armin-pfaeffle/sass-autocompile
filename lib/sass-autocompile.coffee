@@ -86,6 +86,10 @@ module.exports =
 
     toggleEnabled: ->
         atom.config.set('sass-autocompile.enabled', !atom.config.get('sass-autocompile.enabled'))
+        if atom.config.get('sass-autocompile.enabled')
+            atom.notifications.addInfo 'SASS-AutoCompile: Enabled auto-compilation'
+        else
+            atom.notifications.addInfo 'SASS-AutoCompile: Disabled auto-compilation'
         @updateMenuItems()
 
 

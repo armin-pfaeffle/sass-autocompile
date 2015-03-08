@@ -24,7 +24,7 @@ out (string):  path of CSS file to create
 compress (bool): compress CSS file
 main (string): path to your main LESS file to be compiled
 ```
-If you use panel notification, you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can jump to position in the SCSS file where error occured
+If you use panel notification ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can jump to position in the SCSS file where error occured
 
 ### Examples
 When you add th `out` parameter your SASS file is compiled to `main.css` in the relative path `../css/`.
@@ -60,7 +60,7 @@ The special about this parameter is, that when you save a child file, the `index
 
 `Enabled` *Default: true*  
 You can use this option to disable auto compiling SASS file on save. This is especially useful when you migrate from CSS or LESS to SASS, having some errors in the SASS files and don't want to see a error message on each save.  
-**Predefined shortcut**: `ctrl-alt-shift-s`
+**Predefined shortcut to toggle auto-compile**: `ctrl-alt-shift-s`
 
 `Always compress`  *Default: false*  
 If enabled this option ensures that the output is compressed, even if you do **not** use the `compress` paramaeter in the first line.
@@ -71,7 +71,7 @@ This options allows you to decide which feedback you want to see when SASS files
 **Notification**: The default atom notifications are used for output.
 
 `Automatically hide panel on ...` *Default: Success*  
-Select on which event the panel should automatically disappear.
+Select on which event the panel should automatically disappear. If you want to hide the panel via shortcut, you can use `ctrl-alt-shift-h`.
 
 `Panel-auto-hide delay` *Default: 3000*  
 Delay after which panel is automatically hidden.
@@ -98,6 +98,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 
 ## Changelog
+
+**0.3.1 - 08.03.2015**
+- Added notification message on toggling auto-compile.
 
 **0.3.0 - 07.03.2015**
 - Extended notifications
