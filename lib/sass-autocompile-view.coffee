@@ -152,10 +152,12 @@ class SassAutocompileView extends View
                 execString = 'node-sass --output-style ' + outputStyle + ' ' + params.file + ' ' + cssFilename
                 exec execString, (error, stdout, stderr) =>
                     if error != null
-
-                        # Parse error
-                        json = error.message.substr( error.message.indexOf('\n') + 1 )
-                        error = JSON.parse json
+                        if error.message.indexOf('"message"') > -1
+                            # Parse error
+                            json = error.message.substr( error.message.indexOf('\n') + 1 )
+                            error = JSON.parse json
+                        else
+                            error = error.message
 
                         @endCompiling false, error
                     else
@@ -166,7 +168,6 @@ class SassAutocompileView extends View
             catch e
                 errorMessage = "#{e.message} - index: #{e.index}, line: #{e.line}, file: #{e.filename}"
                 @endCompiling false, errorMessage
-
 
         @getParams filename, (params) ->
             if params isnt null
@@ -186,39 +187,33 @@ class SassAutocompileView extends View
 
 
     showErrorNotification: (title, message) ->
-        if typeof message == 'object'
-            message = "FILE:\n" + message.file + "\n \nERROR:\n" + message.message + "\n \nLINE:   " + message.line + "\nCOLUMN: " + message.column
-
         atom.notifications.addError title,
             detail: message
             dismissable: !@options.autoHideErrorNotification
 
 
     startCompiling: (filename) ->
+        @inProgress = true
+
         if @options.showStartCompilingNotification and @options.showInfoNotification
             @showInfoNotification 'Start compiling:', filename
 
         if @options.showPanel
-            @setPanelCaption 'SASS AutoCompile: Compiling...'
             @showPanel()
-
-        @inProgress = true
+            @setPanelCaption 'SASS AutoCompile: Compiling...'
+            @setPanelMessage filename, 'terminal'
 
 
     endCompiling: (wasSuccessful, message, compressed) ->
-        @inProgress = false
-
         if wasSuccessful
             if @options.showSuccessNotification
-                notificationMessage = message + "\n \nCOMPRESSED: " + (if compressed then 'true' else 'false')
+                notificationMessage = message + (if compressed then ' (compressed)' else '')
                 @showSuccessNotification 'Successfuly compiled to:', notificationMessage
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Successfully compiled'
-                @panelLoading.addClass 'hide'
-                @panelClose.removeClass 'hide'
-                @addSuccessMessageToPanel message, compressed
-
+                @setSuccessMessageToPanel message, compressed
+                @showCloseButton()
         else
             if @options.showErrorNotification
                 if typeof message == 'object'
@@ -229,46 +224,59 @@ class SassAutocompileView extends View
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Error while compiling'
-                @panelLoading.addClass 'hide'
-                @panelClose.removeClass 'hide'
-                @addErrorMessageToPanel message
+                @setErrorMessageToPanel message
+                @showCloseButton()
 
         if @options.showPanel and @options.autoHidePanelOnSuccess
             @hidePanel true
 
+        @inProgress = false
 
-    addSuccessMessageToPanel: (message, compressed)->
-        @panelHeading.removeClass 'no-border'
 
+    setPanelCaption: (caption) ->
+        @panelHeaderCaption.html caption
+
+
+    setPanelMessage: (message, icon = "chevron-right") ->
+        icon = if icon then 'icon-' + icon else ''
+        @panelBody.removeClass('hide').append $$ ->
+            @p =>
+                @span class: "icon #{icon} text-info", message
+
+
+    setSuccessMessageToPanel: (filename, compressed) ->
         @panelBody.removeClass('hide').append $$ ->
             @p class: 'open-css-file', =>
-                @span class: "icon icon-check text-success", message
+                @span class: "icon icon-check text-success", filename
                 @span class: "compressed",  (if compressed then ' (compressed)' else '')
 
-        @openCssFile = @find('.open-css-file')
-        @openCssFile.on 'click', (event) =>
-            @openFile message
+        @find('.open-css-file').on 'click', (event) =>
+            @openFile filename
 
 
-    addErrorMessageToPanel: (error)->
-        @panelHeading.removeClass 'no-border'
+    setErrorMessageToPanel: (error) ->
+        if typeof error == 'object'
+            @panelBody.removeClass('hide').append $$ ->
+                @div class: 'open-error-file', =>
+                    @p class: "icon icon-alert text-error", =>
+                        @span class: "error-caption", 'Error:'
+                        @span class: "error-text", error.message
+                    @p class: 'error-details', =>
+                        @span class: 'error-file', error.file
+                        @span class: 'error-line', error.line
+                        @span class: 'error-column', error.column
 
-        @panelBody.removeClass('hide').append $$ ->
-            @div class: 'open-error-file', =>
+            @find('.open-error-file').on 'click', (event) =>
+                @openFile error.file, error.line, error.column
+        else
+            @panelBody.removeClass('hide').append $$ ->
                 @p class: "icon icon-alert text-error", =>
                     @span class: "error-caption", 'Error:'
-                    @span class: "error-text open-error-file", error.message
-                @p class: 'error-details', =>
-                    @span class: 'error-file', error.file
-                    @span class: 'error-line', error.line
-                    @span class: 'error-column', error.column
-
-        @openCssFile = @find('.open-error-file')
-        @openCssFile.on 'click', (event) =>
-            @openFile error.file, error.line, error.column
+                    @span class: "error-text", error
 
 
-    openFile: (filename, line, column)->
+    openFile: (filename, line, column) ->
+        console.log 'openFile'
         atom.workspace.open filename,
             initialLine: if line then line - 1 else 0,
             initialColumn: if column then column - 1 else 0
@@ -303,5 +311,6 @@ class SassAutocompileView extends View
             @addClass 'hide'
 
 
-    setPanelCaption: (caption) ->
-        @panelHeaderCaption.html caption
+    showCloseButton: ->
+        @panelLoading.addClass 'hide'
+        @panelClose.removeClass 'hide'

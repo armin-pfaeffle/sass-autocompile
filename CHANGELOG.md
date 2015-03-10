@@ -1,5 +1,9 @@
+**0.3.2 - 10.03.2015**
+- Fixed bug that opens a SCSS file two times when clicking on panel error message
+- Fixed issue [#2](https://github.com/armin-pfaeffle/sass-autocompile/issues/2)
+
 **0.3.1 - 08.03.2015**
-- Added notification message on toggling auto-compile.
+- Added notification message on toggling auto-compile
 
 **0.3.0 - 07.03.2015**
 - Extended notifications
@@ -12,4 +16,4 @@
 - Added option "always compress"
 
 **0.1.0 - 03.03.2015**
-- Initial version.
+- Initial version
