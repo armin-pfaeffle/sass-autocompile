@@ -276,7 +276,6 @@ class SassAutocompileView extends View
 
 
     openFile: (filename, line, column) ->
-        console.log 'openFile'
         atom.workspace.open filename,
             initialLine: if line then line - 1 else 0,
             initialColumn: if column then column - 1 else 0
