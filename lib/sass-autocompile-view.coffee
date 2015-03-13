@@ -149,7 +149,7 @@ class SassAutocompileView extends View
 
             @startCompiling params.file
             try
-                execString = 'node-sass --output-style ' + outputStyle + ' ' + params.file + ' ' + cssFilename
+                execString = 'node-sass --output-style ' + outputStyle + ' "' + params.file + '" "' + cssFilename + '"'
                 exec execString, (error, stdout, stderr) =>
                     if error != null
                         if error.message.indexOf('"message"') > -1
