@@ -50,6 +50,11 @@ class SassAutocompileView extends View
         @options =
             enabled: atom.config.get('sass-autocompile.enabled')
             alwaysCompress: atom.config.get('sass-autocompile.alwaysCompress')
+            sourceMap: atom.config.get('sass-autocompile.sourceMap')
+            sourceMapEmbed: atom.config.get('sass-autocompile.sourceMapEmbed')
+            sourceMapContents: atom.config.get('sass-autocompile.sourceMapContents')
+            sourceComments: atom.config.get('sass-autocompile.sourceComments')
+            includePath: atom.config.get('sass-autocompile.includePath')
 
             showInfoNotification: atom.config.get('sass-autocompile.notifications') in ['Notifications', 'Panel, Notifications']
             showSuccessNotification: atom.config.get('sass-autocompile.notifications') in ['Notifications', 'Panel, Notifications']
@@ -91,6 +96,11 @@ class SassAutocompileView extends View
             compress: false
             main: false
             out: false
+            sourceMap: false
+            sourceMapEmbed: false
+            sourceMapContents: false
+            sourceComments: false
+            includePath: false
 
         parse = (firstLine) =>
             firstLine.split(',').forEach (item) ->
@@ -141,19 +151,15 @@ class SassAutocompileView extends View
             if params.out is false
                 return
 
-            if @options.alwaysCompress
-                params.compress = true
-
-            outputStyle = if params.compress then 'compressed' else 'nested'
-            cssFilename = path.resolve(path.dirname(params.file), params.out)
+            params.cssFilename = path.resolve(path.dirname(params.file), params.out)
 
             @startCompiling params.file
             try
-                execString = 'node-sass --output-style ' + outputStyle + ' ' + params.file + ' ' + cssFilename
+                execString = @buildExecString params
                 exec execString, (error, stdout, stderr) =>
                     if error != null
                         if error.message.indexOf('"message"') > -1
-                            # Parse error
+                            # Parse internal JSON in error message
                             json = error.message.substr( error.message.indexOf('\n') + 1 )
                             error = JSON.parse json
                         else
@@ -161,7 +167,7 @@ class SassAutocompileView extends View
 
                         @endCompiling false, error
                     else
-                        @endCompiling true, cssFilename, params.compress
+                        @endCompiling true, params.cssFilename, params.compress
 
                     @inProgress = false
                     return
@@ -172,6 +178,45 @@ class SassAutocompileView extends View
         @getParams filename, (params) ->
             if params isnt null
                 compile params
+
+
+    buildExecString: (params) ->
+        execString = 'node-sass'
+
+        # --output-style
+        execString += ' --output-style ' + (if @options.alwaysCompress or params.compress then 'compressed' else 'nested')
+
+        # --source-comments
+        if @options.sourceComments or params.sourceComments
+            execString += ' --source-comments'
+
+        # --source-map
+        if @options.sourceMap or !!params.sourceMap
+            if @options.sourceMap or params.sourceMap == true or params.sourceMap.toLowerCase() == 'true'
+                sourceMapFilename = params.cssFilename + '.map'
+            else
+                sourceMapFilename = path.resolve(path.dirname(params.file), params.sourceMap)
+            execString += ' --source-map "' + sourceMapFilename + '"'
+
+        # --source-map-embed
+        if @options.sourceMapEmbed or params.sourceMapEmbed
+            execString += ' --source-map-embed'
+
+        # --source-map-contents
+        if @options.sourceMapContents or params.sourceMapContents
+            execString += ' --source-map-contents'
+
+        # --include-path
+        if !!@options.includePath
+            execString += ' --include-path "' + @options.includePath + '"'
+        else if !!params.includePath
+            execString += ' --include-path "' + params.includePath + '"'
+
+        # CSS target and output file
+        execString += ' "' + params.file + '"'
+        execString += ' "' + params.cssFilename + '"'
+
+        return execString
 
 
     showInfoNotification: (title, message) ->
