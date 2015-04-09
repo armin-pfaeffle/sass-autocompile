@@ -136,7 +136,7 @@ module.exports =
         if atom.config.get('sass-autocompile.enabled')
             atom.notifications.addInfo 'SASS-AutoCompile: Enabled auto-compilation'
         else
-            atom.notifications.addInfo 'SASS-AutoCompile: Disabled auto-compilation'
+            atom.notifications.addWarning 'SASS-AutoCompile: Disabled auto-compilation'
         @updateMenuItems()
 
 
