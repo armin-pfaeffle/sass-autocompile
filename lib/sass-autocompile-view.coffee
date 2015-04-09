@@ -5,31 +5,28 @@ class SassAutocompileView extends View
 
     @content: ->
         @div class: 'sass-autocompile atom-panel panel-bottom hide', =>
-            @div class: "inset-panel", =>
-                @div class: "panel-heading no-border", =>
+            @div class: 'inset-panel', =>
+                @div outlet: 'panelHeading', class: 'panel-heading no-border', =>
                     @span
+                        outlet: 'panelHeaderCaption'
                         class: 'header-caption'
                         'SASS AutoCompile: Compiling...'
                     @span
+                        outlet: 'panelLoading'
                         class: 'inline-block loading loading-spinner-tiny hide'
                         style: 'margin-left: 10px;'
                     @div class: 'inline-block pull-right', =>
                         @button
+                            outlet: 'panelClose'
                             class: 'btn btn-close hide'
                             click: 'hidePanel'
                             'Close'
-                @div class: "panel-body padded hide", =>
+                @div outlet: 'panelBody', class: 'panel-body padded hide', =>
 
 
     initialize: (serializeState) ->
         @inProgress = false
         @timeout = null
-
-        @panelHeading = @find('.panel-heading')
-        @panelHeaderCaption = @find('.header-caption')
-        @panelBody = @find('.panel-body')
-        @panelLoading = @find('.loading')
-        @panelClose = @find('.btn-close')
 
         atom.workspace.observeTextEditors (editor) =>
             editor.onDidSave =>
@@ -49,7 +46,8 @@ class SassAutocompileView extends View
     prepareOptions: ->
         @options =
             enabled: atom.config.get('sass-autocompile.enabled')
-            alwaysCompress: atom.config.get('sass-autocompile.alwaysCompress')
+
+            compress: atom.config.get('sass-autocompile.compress')
             sourceMap: atom.config.get('sass-autocompile.sourceMap')
             sourceMapEmbed: atom.config.get('sass-autocompile.sourceMapEmbed')
             sourceMapContents: atom.config.get('sass-autocompile.sourceMapContents')
@@ -82,7 +80,7 @@ class SassAutocompileView extends View
         filename = editor.getUri()
         fileExtension = path.extname filename
 
-        if fileExtension == '.scss'
+        if fileExtension.toLowerCase() == '.scss'
             @compileSass filename
 
 
@@ -93,14 +91,14 @@ class SassAutocompileView extends View
 
         params =
             file: filename
-            compress: false
-            main: false
-            out: false
-            sourceMap: false
-            sourceMapEmbed: false
-            sourceMapContents: false
-            sourceComments: false
-            includePath: false
+            out: null
+            main: null
+            compress: null
+            sourceMap: null
+            sourceMapEmbed: null
+            sourceMapContents: null
+            sourceComments: null
+            includePath: null
 
         parse = (firstLine) =>
             firstLine.split(',').forEach (item) ->
@@ -119,14 +117,14 @@ class SassAutocompileView extends View
 
                 params[key] = value
 
-            if params.main isnt false
+            if params.main isnt null
                 parentFilename = path.resolve(path.dirname(filename), params.main)
                 @getParams parentFilename, callback
             else
                 callback params
 
         if !fs.existsSync filename
-            @showErrorNotification 'Path does not exist:', "#{filename}"
+            @showErrorNotification 'Path does not exist:', "#{filename}", true
             @inProgress = false
             return null
 
@@ -148,7 +146,7 @@ class SassAutocompileView extends View
         exec = require('child_process').exec
 
         compile = (params) =>
-            if params.out is false
+            if params.out is null
                 return
 
             params.cssFilename = path.resolve(path.dirname(params.file), params.out)
@@ -184,33 +182,33 @@ class SassAutocompileView extends View
         execString = 'node-sass'
 
         # --output-style
-        execString += ' --output-style ' + (if @options.alwaysCompress or params.compress then 'compressed' else 'nested')
+        execString += ' --output-style ' + (if params.compress or (params.compress is null and @options.compress) then 'compressed' else 'nested')
 
         # --source-comments
-        if @options.sourceComments or params.sourceComments
+        if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
             execString += ' --source-comments'
 
         # --source-map
-        if @options.sourceMap or !!params.sourceMap
-            if @options.sourceMap or params.sourceMap == true or params.sourceMap.toLowerCase() == 'true'
+        if (params.sourceMap isnt null and !!params.sourceMap) or (params.sourceMap is null and @options.sourceMap)
+            if params.sourceMap == true or (typeof params.sourceMap == 'string' and params.sourceMap.toLowerCase() == 'true') or (params.sourceMap is null and @options.sourceMap)
                 sourceMapFilename = params.cssFilename + '.map'
             else
                 sourceMapFilename = path.resolve(path.dirname(params.file), params.sourceMap)
             execString += ' --source-map "' + sourceMapFilename + '"'
 
         # --source-map-embed
-        if @options.sourceMapEmbed or params.sourceMapEmbed
+        if params.sourceMapEmbed or (params.sourceMapEmbed is null and @options.sourceMapEmbed)
             execString += ' --source-map-embed'
 
         # --source-map-contents
-        if @options.sourceMapContents or params.sourceMapContents
+        if params.sourceMapContents or (params.sourceMapContents is null and @options.sourceMapContents)
             execString += ' --source-map-contents'
 
         # --include-path
-        if !!@options.includePath
-            execString += ' --include-path "' + @options.includePath + '"'
-        else if !!params.includePath
+        if !!params.includePath
             execString += ' --include-path "' + params.includePath + '"'
+        else if !!@options.includePath
+            execString += ' --include-path "' + @options.includePath + '"'
 
         # CSS target and output file
         execString += ' "' + params.file + '"'
@@ -219,19 +217,28 @@ class SassAutocompileView extends View
         return execString
 
 
-    showInfoNotification: (title, message) ->
+    showInfoNotification: (title, message, forceShow = false) ->
+        if !@options.showInfoNotification and !forceShow
+            return
+
         atom.notifications.addInfo title,
             detail: message
             dismissable: !@options.autoHideInfoNotification
 
 
-    showSuccessNotification: (title, message) ->
+    showSuccessNotification: (title, message, forceShow = false) ->
+        if !@options.showSuccessNotification and !forceShow
+            return
+
         atom.notifications.addSuccess title,
             detail: message
             dismissable: !@options.autoHideSuccessNotification
 
 
-    showErrorNotification: (title, message) ->
+    showErrorNotification: (title, message, forceShow = false) ->
+        if !@options.showErrorNotification and !forceShow
+            return
+
         atom.notifications.addError title,
             detail: message
             dismissable: !@options.autoHideErrorNotification
@@ -240,7 +247,7 @@ class SassAutocompileView extends View
     startCompiling: (filename) ->
         @inProgress = true
 
-        if @options.showStartCompilingNotification and @options.showInfoNotification
+        if @options.showStartCompilingNotification
             @showInfoNotification 'Start compiling:', filename
 
         if @options.showPanel
@@ -251,29 +258,28 @@ class SassAutocompileView extends View
 
     endCompiling: (wasSuccessful, message, compressed) ->
         if wasSuccessful
-            if @options.showSuccessNotification
-                notificationMessage = message + (if compressed then ' (compressed)' else '')
-                @showSuccessNotification 'Successfuly compiled to:', notificationMessage
+            notificationMessage = message + (if compressed then ' (compressed)' else '')
+            @showSuccessNotification 'Successfuly compiled to:', notificationMessage
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Successfully compiled'
                 @setSuccessMessageToPanel message, compressed
                 @showCloseButton()
+                if @options.autoHidePanelOnSuccess
+                    @hidePanel true
         else
-            if @options.showErrorNotification
-                if typeof message == 'object'
-                    errorNotification = "FILE:\n" + message.file + "\n \nERROR:\n" + message.message + "\n \nLINE:    " + message.line + "\nCOLUMN:  " + message.column
-                else
-                    errorNotification = message
-                @showErrorNotification 'Error while compiling:', errorNotification
+            if typeof message == 'object'
+                errorNotification = "FILE:\n" + message.file + "\n \nERROR:\n" + message.message + "\n \nLINE:    " + message.line + "\nCOLUMN:  " + message.column
+            else
+                errorNotification = message
+            @showErrorNotification 'Error while compiling:', errorNotification
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Error while compiling'
                 @setErrorMessageToPanel message
                 @showCloseButton()
-
-        if @options.showPanel and @options.autoHidePanelOnSuccess
-            @hidePanel true
+                if @options.autoHidePanelOnError
+                    @hidePanel true
 
         @inProgress = false
 
@@ -342,12 +348,15 @@ class SassAutocompileView extends View
         @removeClass 'hide'
 
 
-    hidePanel: (withTimeout) ->
+    hidePanel: (withDelay = false) ->
         @panelLoading.addClass 'hide'
 
         clearTimeout @timeout
 
-        if withTimeout
+        console.log 'hidePanel'
+        console.log withDelay
+
+        if withDelay == true
             @timeout = setTimeout =>
                 @addClass 'hide'
             , @options.autoHidePanelDelay

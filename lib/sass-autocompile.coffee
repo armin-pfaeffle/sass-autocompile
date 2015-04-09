@@ -3,6 +3,9 @@ SassAutocompileView = require './sass-autocompile-view'
 module.exports =
 
     config:
+
+        # General settings
+
         enabled:
             title: 'Enabled'
             description: 'This option en-/disables auto compiling on save.'
@@ -10,47 +13,53 @@ module.exports =
             default: true
             order: 1
 
-        alwaysCompress:
-            title: 'Always Compress'
-            description: 'If enabled this options overrides \'compress: true\' parameter.'
+
+        # node-sass options
+
+        compress:
+            title: 'Compress CSS'
+            description: 'If enabled created CSS is compressed (minified) by node-sass.'
             type: 'boolean'
             default: false
             order: 2
 
         sourceMap:
             title: 'Build source map'
-            description: 'If true a source map is generated. Overrides \'sourceMap: true\' parameter.'
+            description: 'If enabled a source map is generated.'
             type: 'boolean'
             default: false
             order: 3
 
         sourceMapEmbed:
             title: 'Embed source map'
-            description: 'If true source map is embedded as a data URI. Overrides \'sourceMapEmbed: true\' parameter.'
+            description: 'If enabled source map is embedded as a data URI.'
             type: 'boolean'
             default: false
             order: 4
 
         sourceMapContents:
             title: 'Include contents in source map information'
-            description: 'If true contents are included in source map information. Overrides \'sourceMapContents: true\' parameter.'
+            description: 'If enabled contents are included in source map information.'
             type: 'boolean'
             default: false
             order: 5
 
         sourceComments:
-            title: 'Include contents in source map information'
-            description: 'If true additional debugging information in the output file as CSS comments are enabled. If file is compressed this feature is disabled by SASS compiler. Overrides \'sourceComments: true\' parameter.'
+            title: 'Include additional debugging information in the output CSS file'
+            description: 'If enabled additional debugging information are added to the output file as CSS comments. If CSS is compressed this feature is disabled by SASS compiler.'
             type: 'boolean'
             default: false
             order: 6
 
         includePath:
             title: 'Include path'
-            description: 'Path to look for imported files (@import declarations). Overrides \'includePath\' parameter.'
+            description: 'Path to look for imported files (@import declarations).'
             type: 'string'
             default: ''
             order: 7
+
+
+        # Notification options
 
         notifications:
             title: 'Notifications'
@@ -97,13 +106,16 @@ module.exports =
     activate: (state) ->
         @sassAutocompileView = new SassAutocompileView(state.sassAutocompileViewState)
 
+        # TODO: Remove later!!!!!
+        # Temporary code for removing "alwaysCompress" setting, because of renaming this option
+        atom.config.unset('sass-autocompile.alwaysCompress')
+
         atom.commands.add 'atom-workspace',
             'sass-autocompile:toggle-enabled': =>
                 @toggleEnabled()
 
             'sass-autocompile:toggle-always-compress': =>
-                @toggleAlwaysCompress()
-                @toggleEnabled()
+                @toggleCompress()
 
             'sass-autocompile:close-message-panel': =>
                 @closeMessagePanel()
@@ -128,8 +140,8 @@ module.exports =
         @updateMenuItems()
 
 
-    toggleAlwaysCompress: ->
-        atom.config.set('sass-autocompile.alwaysCompress', !atom.config.get('sass-autocompile.alwaysCompress'))
+    toggleCompress: ->
+        atom.config.set('sass-autocompile.compress', !atom.config.get('sass-autocompile.compress'))
         @updateMenuItems()
 
 
@@ -158,7 +170,7 @@ module.exports =
                         item.label = (if atom.config.get('sass-autocompile.enabled') then 'Disable' else 'Enable')
 
                         item = submenu.submenu[1]
-                        item.label = (if atom.config.get('sass-autocompile.alwaysCompress') then 'Disable' else 'Enable') + ' always compress'
+                        item.label = (if atom.config.get('sass-autocompile.compress') then 'Disable' else 'Enable') + ' \'Compress CSS\''
 
         atom.menu.update()
 
