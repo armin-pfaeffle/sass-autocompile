@@ -353,9 +353,6 @@ class SassAutocompileView extends View
 
         clearTimeout @timeout
 
-        console.log 'hidePanel'
-        console.log withDelay
-
         if withDelay == true
             @timeout = setTimeout =>
                 @addClass 'hide'
