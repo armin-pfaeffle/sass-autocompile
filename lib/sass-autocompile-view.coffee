@@ -153,6 +153,7 @@ class SassAutocompileView extends View
 
             @startCompiling params.file
             try
+                @temporaryFixEnvironmentPathVariableOnDarwin()
                 execString = @buildExecString params
                 exec execString, (error, stdout, stderr) =>
                     if error != null
@@ -166,12 +167,11 @@ class SassAutocompileView extends View
                         @endCompiling false, error
                     else
                         @endCompiling true, params.cssFilename, params.compress
-
-                    @inProgress = false
-                    return
             catch e
                 errorMessage = "#{e.message} - index: #{e.index}, line: #{e.line}, file: #{e.filename}"
                 @endCompiling false, errorMessage
+
+            @restoreTemporaryEnvironmentPathVariableFixOnDarwin()
 
         @getParams filename, (params) ->
             if params isnt null
@@ -215,6 +215,19 @@ class SassAutocompileView extends View
         execString += ' "' + params.cssFilename + '"'
 
         return execString
+
+
+    temporaryFixEnvironmentPathVariableOnDarwin: ->
+        if process.platform is "darwin" and process.env.PATH.indexOf('/usr/local/bin') is -1
+            @darwinEnvironmentPathVariableBackup = process.env.PATH
+            process.env.PATH += ':/usr/local/bin'
+            @darwinEnvironmentPathVariableFix = true
+
+
+    restoreTemporaryEnvironmentPathVariableFixOnDarwin: ->
+        if @darwinEnvironmentPathVariableFix
+          process.env.PATH = @darwinEnvironmentPathVariableBackup
+          @darwinEnvironmentPathVariableFix = false
 
 
     showInfoNotification: (title, message, forceShow = false) ->

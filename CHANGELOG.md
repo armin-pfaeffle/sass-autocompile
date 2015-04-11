@@ -1,3 +1,6 @@
+**0.6.0 - 12.04.2015**
+- Bugfix: Starting Atom via Dock on Mac OS X leads to "command not found" error"
+
 **0.5.0 - 09.04.2015**
 - **Changed behaviour**: specifying parameters in SCSS file overrides settings and not vice versa
 - File extension detection (.scss) is now case **insensitive**

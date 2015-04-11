@@ -193,6 +193,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.6.0 - 12.04.2015**
+- Bugfix: Starting Atom via Dock on Mac OS X leads to "command not found" error"
+
 **0.5.0 - 09.04.2015**
 - **Changed behaviour**: specifying parameters in SCSS file overrides settings and not vice versa
 - File extension detection (.scss) is now case **insensitive**
@@ -200,6 +203,7 @@ For other concerns like questions or feeback [have a look at the discussion thre
 - Bugfix: Toggling option "Compress CSS" toggled enabled option
 - Bugifx: Auto-hiding panel on error did not work correctly
 - Bugfix: Close button on panel did not instantly hide panel
+- Bugfix: Wrong title for option 'sourceComments'
 - Updated Readme
 
 **0.4.0 - 18.03.2015**
