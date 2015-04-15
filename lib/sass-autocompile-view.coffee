@@ -24,6 +24,21 @@ class SassAutocompileView extends View
                 @div outlet: 'panelBody', class: 'panel-body padded hide', =>
 
 
+    @OPTIONS_PREFIX = 'sass-autocompile.'
+
+
+    @getOption: (name) ->
+        return atom.config.get(SassAutocompileView.OPTIONS_PREFIX + name)
+
+
+    @setOption: (name, value) ->
+        atom.config.set(SassAutocompileView.OPTIONS_PREFIX + name, value)
+
+
+    @unsetOption: (name) ->
+        atom.config.unset(SassAutocompileView.OPTIONS_PREFIX + name)
+
+
     initialize: (serializeState) ->
         @inProgress = false
         @timeout = null
@@ -31,7 +46,6 @@ class SassAutocompileView extends View
         atom.workspace.observeTextEditors (editor) =>
             editor.onDidSave =>
                 if !@inProgress
-                    @prepareOptions()
                     @compile atom.workspace.activePaneItem
 
     # Returns an object that can be retrieved when package is activated
@@ -45,36 +59,35 @@ class SassAutocompileView extends View
 
     prepareOptions: ->
         @options =
-            enabled: atom.config.get('sass-autocompile.enabled')
+            enabled: SassAutocompileView.getOption('enabled')
 
-            compress: atom.config.get('sass-autocompile.compress')
-            sourceMap: atom.config.get('sass-autocompile.sourceMap')
-            sourceMapEmbed: atom.config.get('sass-autocompile.sourceMapEmbed')
-            sourceMapContents: atom.config.get('sass-autocompile.sourceMapContents')
-            sourceComments: atom.config.get('sass-autocompile.sourceComments')
-            includePath: atom.config.get('sass-autocompile.includePath')
+            compress: SassAutocompileView.getOption('compress')
+            sourceMap: SassAutocompileView.getOption('sourceMap')
+            sourceMapEmbed: SassAutocompileView.getOption('sourceMapEmbed')
+            sourceMapContents: SassAutocompileView.getOption('sourceMapContents')
+            sourceComments: SassAutocompileView.getOption('sourceComments')
+            includePath: SassAutocompileView.getOption('includePath')
 
-            showInfoNotification: atom.config.get('sass-autocompile.notifications') in ['Notifications', 'Panel, Notifications']
-            showSuccessNotification: atom.config.get('sass-autocompile.notifications') in ['Notifications', 'Panel, Notifications']
-            showErrorNotification: atom.config.get('sass-autocompile.notifications') in ['Notifications', 'Panel, Notifications']
+            showInfoNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
+            showSuccessNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
+            showErrorNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
 
-            autoHideInfoNotification: atom.config.get('sass-autocompile.autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
-            autoHideSuccessNotification: atom.config.get('sass-autocompile.autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
-            autoHideErrorNotification: atom.config.get('sass-autocompile.autoHideNotifications') in ['Error', 'Info, Success, Error']
+            autoHideInfoNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
+            autoHideSuccessNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
+            autoHideErrorNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Error', 'Info, Success, Error']
 
-            showPanel: atom.config.get('sass-autocompile.notifications') in ['Panel', 'Panel, Notifications']
+            showPanel: SassAutocompileView.getOption('notifications') in ['Panel', 'Panel, Notifications']
 
-            autoHidePanelOnSuccess: atom.config.get('sass-autocompile.autoHidePanel') in ['Success', 'Success, Error']
-            autoHidePanelOnError: atom.config.get('sass-autocompile.autoHidePanel') in ['Error', 'Success, Error']
-            autoHidePanelDelay: atom.config.get('sass-autocompile.autoHidePanelDelay')
+            autoHidePanelOnSuccess: SassAutocompileView.getOption('autoHidePanel') in ['Success', 'Success, Error']
+            autoHidePanelOnError: SassAutocompileView.getOption('autoHidePanel') in ['Error', 'Success, Error']
+            autoHidePanelDelay: SassAutocompileView.getOption('autoHidePanelDelay')
 
-            showStartCompilingNotification: atom.config.get('sass-autocompile.showStartCompilingNotification')
+            showStartCompilingNotification: SassAutocompileView.getOption('showStartCompilingNotification')
+
+            macOsNodeSassPath: SassAutocompileView.getOption('macOsNodeSassPath')
 
 
     compile: (editor) ->
-        if !@options.enabled
-            return
-
         path = require 'path'
 
         filename = editor.getUri()
@@ -142,6 +155,10 @@ class SassAutocompileView extends View
 
 
     compileSass: (filename) ->
+        @prepareOptions()
+        if !@options.enabled
+            return
+
         path = require 'path'
         exec = require('child_process').exec
 
@@ -153,7 +170,6 @@ class SassAutocompileView extends View
 
             @startCompiling params.file
             try
-                @temporaryFixEnvironmentPathVariableOnDarwin()
                 execString = @buildExecString params
                 exec execString, (error, stdout, stderr) =>
                     if error != null
@@ -171,8 +187,6 @@ class SassAutocompileView extends View
                 errorMessage = "#{e.message} - index: #{e.index}, line: #{e.line}, file: #{e.filename}"
                 @endCompiling false, errorMessage
 
-            @restoreTemporaryEnvironmentPathVariableFixOnDarwin()
-
         @getParams filename, (params) ->
             if params isnt null
                 compile params
@@ -180,6 +194,13 @@ class SassAutocompileView extends View
 
     buildExecString: (params) ->
         execString = 'node-sass'
+
+        # Add absolute path for Mac OS to run node-sass, see issue #4s
+        if process.platform is "darwin"
+            nodeSassPath = @options.macOsNodeSassPath
+            if nodeSassPath.substr(-1) isnt '/'
+                nodeSassPath += '/'
+            execString = nodeSassPath + execString
 
         # --output-style
         execString += ' --output-style ' + (if params.compress or (params.compress is null and @options.compress) then 'compressed' else 'nested')
@@ -215,19 +236,6 @@ class SassAutocompileView extends View
         execString += ' "' + params.cssFilename + '"'
 
         return execString
-
-
-    temporaryFixEnvironmentPathVariableOnDarwin: ->
-        if process.platform is "darwin" and process.env.PATH.indexOf('/usr/local/bin') is -1
-            @darwinEnvironmentPathVariableBackup = process.env.PATH
-            process.env.PATH += ':/usr/local/bin'
-            @darwinEnvironmentPathVariableFix = true
-
-
-    restoreTemporaryEnvironmentPathVariableFixOnDarwin: ->
-        if @darwinEnvironmentPathVariableFix
-          process.env.PATH = @darwinEnvironmentPathVariableBackup
-          @darwinEnvironmentPathVariableFix = false
 
 
     showInfoNotification: (title, message, forceShow = false) ->

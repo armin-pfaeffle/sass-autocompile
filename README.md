@@ -193,6 +193,11 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.6.1 - 15.04.2015**
+- Bugfix: Issue #4 was not fixed with 0.6.0; Added Option for absolute path to node-sass command
+- Optimized option requests
+- Optimized option preparation for more performance
+
 **0.6.0 - 12.04.2015**
 - Bugfix: Starting Atom via Dock on Mac OS X leads to "command not found" error"
 

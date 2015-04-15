@@ -99,6 +99,13 @@ module.exports =
             default: false
             order: 12
 
+        macOsNodeSassPath:
+            title: 'ONLY FOR MAC OS: Path to \'node-sass\' command'
+            description: 'Absolute path where \'node-sass\' command can be found.'
+            type: 'string'
+            default: '/usr/local/bin'
+            order: 13
+
 
     sassAutocompileView: null
 
@@ -108,7 +115,7 @@ module.exports =
 
         # TODO: Remove later!!!!!
         # Temporary code for removing "alwaysCompress" setting, because of renaming this option
-        atom.config.unset('sass-autocompile.alwaysCompress')
+        SassAutocompileView.unsetOption('alwaysCompress')
 
         atom.commands.add 'atom-workspace',
             'sass-autocompile:toggle-enabled': =>
@@ -132,8 +139,8 @@ module.exports =
 
 
     toggleEnabled: ->
-        atom.config.set('sass-autocompile.enabled', !atom.config.get('sass-autocompile.enabled'))
-        if atom.config.get('sass-autocompile.enabled')
+        SassAutocompileView.setOption('enabled', !SassAutocompileView.getOption('enabled'))
+        if SassAutocompileView.getOption 'enabled'
             atom.notifications.addInfo 'SASS-AutoCompile: Enabled auto-compilation'
         else
             atom.notifications.addWarning 'SASS-AutoCompile: Disabled auto-compilation'
@@ -141,7 +148,7 @@ module.exports =
 
 
     toggleCompress: ->
-        atom.config.set('sass-autocompile.compress', !atom.config.get('sass-autocompile.compress'))
+        SassAutocompileView.setOption('compress', !SassAutocompileView.getOption('compress'))
         @updateMenuItems()
 
 
@@ -167,10 +174,10 @@ module.exports =
                 for submenu in menu.submenu
                     if submenu.label == 'SASS Autocompile'
                         item = submenu.submenu[0]
-                        item.label = (if atom.config.get('sass-autocompile.enabled') then 'Disable' else 'Enable')
+                        item.label = (if SassAutocompileView.getOption('enabled') then 'Disable' else 'Enable')
 
                         item = submenu.submenu[1]
-                        item.label = (if atom.config.get('sass-autocompile.compress') then 'Disable' else 'Enable') + ' \'Compress CSS\''
+                        item.label = (if SassAutocompileView.getOption('compress') then 'Disable' else 'Enable') + ' \'Compress CSS\''
 
         atom.menu.update()
 
