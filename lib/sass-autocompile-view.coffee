@@ -90,11 +90,12 @@ class SassAutocompileView extends View
     compile: (editor) ->
         path = require 'path'
 
-        filename = editor.getUri()
-        fileExtension = path.extname filename
+        if typeof editor is 'object' and typeof editor.getUri is 'function'
+            filename = editor.getUri()
+            fileExtension = path.extname filename
 
-        if fileExtension.toLowerCase() == '.scss'
-            @compileSass filename
+            if fileExtension.toLowerCase() == '.scss'
+                @compileSass filename
 
 
     getParams: (filename, callback) ->

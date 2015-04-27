@@ -193,6 +193,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.6.2 - 27.04.2015**
+- Bugfix: Fixed issue [#5](https://github.com/armin-pfaeffle/sass-autocompile/issues/5)
+
 **0.6.1 - 15.04.2015**
 - Bugfix: Issue #4 was not fixed with 0.6.0; Added Option for absolute path to node-sass command
 - Optimized option requests
