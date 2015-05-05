@@ -1,3 +1,6 @@
+**0.6.3 - 05.05.2015**
+- Bugfix: Fixed issue [#6](https://github.com/armin-pfaeffle/sass-autocompile/issues/6)
+
 **0.6.2 - 27.04.2015**
 - Bugfix: Fixed issue [#5](https://github.com/armin-pfaeffle/sass-autocompile/issues/5)
 
