@@ -1,4 +1,4 @@
-{View, $, $$} = require 'atom'
+{$$, View} = require 'atom-space-pen-views'
 
 module.exports =
 class SassAutocompileView extends View
@@ -46,10 +46,7 @@ class SassAutocompileView extends View
         atom.workspace.observeTextEditors (editor) =>
             editor.onDidSave =>
                 if !@inProgress
-                    @compile atom.workspace.activePaneItem
-
-    # Returns an object that can be retrieved when package is activated
-    serialize: ->
+                    @compile editor
 
 
     # Tear down any state and detach
@@ -90,8 +87,9 @@ class SassAutocompileView extends View
     compile: (editor) ->
         path = require 'path'
 
-        if typeof editor is 'object' and typeof editor.getUri is 'function'
-            filename = editor.getUri()
+        activeEditor = atom.workspace.getActiveTextEditor()
+        if activeEditor and activeEditor.getURI
+            filename = activeEditor.getURI()
             fileExtension = path.extname filename
 
             if fileExtension.toLowerCase() == '.scss'
@@ -359,10 +357,10 @@ class SassAutocompileView extends View
 
         clearTimeout @timeout
 
-        @panelHeading.addClass 'no-border'
+        @panelHeading.addClass('no-border')
         @panelBody.addClass('hide').empty()
-        @panelLoading.removeClass 'hide'
-        @panelClose.addClass 'hide'
+        @panelLoading.removeClass('hide')
+        @panelClose.addClass('hide')
 
         atom.workspace.addBottomPanel
             item: this
@@ -384,5 +382,5 @@ class SassAutocompileView extends View
 
 
     showCloseButton: ->
-        @panelLoading.addClass 'hide'
-        @panelClose.removeClass 'hide'
+        @panelLoading.addClass('hide')
+        @panelClose.removeClass('hide')
