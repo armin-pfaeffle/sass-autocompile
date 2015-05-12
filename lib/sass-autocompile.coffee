@@ -124,8 +124,9 @@ module.exports =
             'sass-autocompile:toggle-always-compress': =>
                 @toggleCompress()
 
-            'sass-autocompile:close-message-panel': =>
+            'sass-autocompile:close-message-panel': (e) =>
                 @closeMessagePanel()
+                e.abortKeyBinding()
 
             @addMenuItems()
 

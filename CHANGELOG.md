@@ -1,3 +1,7 @@
+**0.6.4 - 12.05.2015**
+- Bugfix: Finally fixed issue [#4](https://github.com/armin-pfaeffle/sass-autocompile/issues/4)
+- Bugfix: Start Compiling notification was visible in panel although option was disabled
+
 **0.6.3 - 05.05.2015**
 - Bugfix: Fixed issue [#6](https://github.com/armin-pfaeffle/sass-autocompile/issues/6)
 
@@ -5,7 +9,7 @@
 - Bugfix: Fixed issue [#5](https://github.com/armin-pfaeffle/sass-autocompile/issues/5)
 
 **0.6.1 - 15.04.2015**
-- Bugfix: Issue #4 was not fixed with 0.6.0; Added Option for absolute path to node-sass command
+- Bugfix: Issue [#4](https://github.com/armin-pfaeffle/sass-autocompile/issues/4) was not fixed with 0.6.0; Added Option for absolute path to node-sass command
 - Optimized option requests
 - Optimized option preparation for more performance
 

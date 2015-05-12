@@ -158,7 +158,7 @@ class SassAutocompileView extends View
         if !@options.enabled
             return
 
-        path = require 'path'
+        path = require('path')
         exec = require('child_process').exec
 
         compile = (params) =>
@@ -167,10 +167,10 @@ class SassAutocompileView extends View
 
             params.cssFilename = path.resolve(path.dirname(params.file), params.out)
 
-            @startCompiling params.file
+            @startCompiling(params.file)
             try
-                execString = @buildExecString params
-                exec execString, (error, stdout, stderr) =>
+                execParameters = @obtainExecParameters(params)
+                exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
                     if error != null
                         if error.message.indexOf('"message"') > -1
                             # Parse internal JSON in error message
@@ -191,22 +191,37 @@ class SassAutocompileView extends View
                 compile params
 
 
-    buildExecString: (params) ->
-        execString = 'node-sass'
+    obtainExecParameters: (params) ->
+        # Build command string
+        nodeSassParameters = @buildNodeSassParameters(params)
+        command = 'node-sass ' + nodeSassParameters.join(' ')
 
-        # Add absolute path for Mac OS to run node-sass, see issue #4s
+        # Clone current environment
+        environment = Object.create(process.env)
+
+        # If it's Mac OS we have to add macOsNodeSassPath to command and to environment variable
+        # PATH so shell AND node.js can find node-sass command
         if process.platform is "darwin"
-            nodeSassPath = @options.macOsNodeSassPath
-            if nodeSassPath.substr(-1) isnt '/'
-                nodeSassPath += '/'
-            execString = nodeSassPath + execString
+            command = path.join(@options.macOsNodeSassPath, command)
+            environment.PATH += ":#{@options.macOsNodeSassPath}"
+
+        return {
+            command: command,
+            environment: environment
+        }
+
+
+    buildNodeSassParameters: (params) ->
+        path = require('path')
+
+        execParameters = []
 
         # --output-style
-        execString += ' --output-style ' + (if params.compress or (params.compress is null and @options.compress) then 'compressed' else 'nested')
+        execParameters.push('--output-style ' + (if params.compress or (params.compress is null and @options.compress) then 'compressed' else 'nested'))
 
         # --source-comments
         if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
-            execString += ' --source-comments'
+            execParameters.push('--source-comments')
 
         # --source-map
         if (params.sourceMap isnt null and !!params.sourceMap) or (params.sourceMap is null and @options.sourceMap)
@@ -214,27 +229,27 @@ class SassAutocompileView extends View
                 sourceMapFilename = params.cssFilename + '.map'
             else
                 sourceMapFilename = path.resolve(path.dirname(params.file), params.sourceMap)
-            execString += ' --source-map "' + sourceMapFilename + '"'
+            execParameters.push('--source-map "' + sourceMapFilename + '"')
 
         # --source-map-embed
         if params.sourceMapEmbed or (params.sourceMapEmbed is null and @options.sourceMapEmbed)
-            execString += ' --source-map-embed'
+            execParameters.push('--source-map-embed')
 
         # --source-map-contents
         if params.sourceMapContents or (params.sourceMapContents is null and @options.sourceMapContents)
-            execString += ' --source-map-contents'
+            execParameters.push('--source-map-contents')
 
         # --include-path
         if !!params.includePath
-            execString += ' --include-path "' + params.includePath + '"'
+            execParameters.push('--include-path "' + params.includePath + '"')
         else if !!@options.includePath
-            execString += ' --include-path "' + @options.includePath + '"'
+            execParameters.push('--include-path "' + @options.includePath + '"')
 
         # CSS target and output file
-        execString += ' "' + params.file + '"'
-        execString += ' "' + params.cssFilename + '"'
+        execParameters.push('"' + params.file + '"')
+        execParameters.push('"' + params.cssFilename + '"')
 
-        return execString
+        return execParameters
 
 
     showInfoNotification: (title, message, forceShow = false) ->
@@ -273,13 +288,14 @@ class SassAutocompileView extends View
         if @options.showPanel
             @showPanel()
             @setPanelCaption 'SASS AutoCompile: Compiling...'
-            @setPanelMessage filename, 'terminal'
+            if @options.showStartCompilingNotification
+                @setPanelMessage filename, 'terminal'
 
 
     endCompiling: (wasSuccessful, message, compressed) ->
         if wasSuccessful
             notificationMessage = message + (if compressed then ' (compressed)' else '')
-            @showSuccessNotification 'Successfuly compiled to:', notificationMessage
+            @showSuccessNotification 'Successfully compiled to:', notificationMessage
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Successfully compiled'
