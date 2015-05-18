@@ -193,6 +193,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.6.5 - 18.05.2015**
+- Bugfix: Fixed issue [#7](https://github.com/armin-pfaeffle/sass-autocompile/issues/7)
+
 **0.6.4 - 12.05.2015**
 - Bugfix: Finally fixed issue [#4](https://github.com/armin-pfaeffle/sass-autocompile/issues/4)
 - Bugfix: Start Compiling notification was visible in panel although option was disabled
