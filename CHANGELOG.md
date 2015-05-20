@@ -1,3 +1,8 @@
+**0.7.0 - 20.05.2015**
+- New features: node-sass command output can be opened in a new tab
+- New option: open node-sass command output automatically after compilation
+- Completed missing documentation
+
 **0.6.5 - 18.05.2015**
 - Bugfix: Fixed issue [#7](https://github.com/armin-pfaeffle/sass-autocompile/issues/7)
 

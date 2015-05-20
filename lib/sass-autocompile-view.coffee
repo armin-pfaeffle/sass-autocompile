@@ -14,7 +14,11 @@ class SassAutocompileView extends View
                     @span
                         outlet: 'panelLoading'
                         class: 'inline-block loading loading-spinner-tiny hide'
-                        style: 'margin-left: 10px;'
+                    @span
+                        outlet: 'panelOpenNodeSassOutput'
+                        class: 'open-node-sass-output hide'
+                        click: 'openNodeSassOutput'
+                        'Show detailed output'
                     @div class: 'inline-block pull-right', =>
                         @button
                             outlet: 'panelClose'
@@ -80,6 +84,8 @@ class SassAutocompileView extends View
             autoHidePanelDelay: SassAutocompileView.getOption('autoHidePanelDelay')
 
             showStartCompilingNotification: SassAutocompileView.getOption('showStartCompilingNotification')
+
+            showNodeSassOutput : SassAutocompileView.getOption('showNodeSassOutput')
 
             macOsNodeSassPath: SassAutocompileView.getOption('macOsNodeSassPath')
 
@@ -155,6 +161,7 @@ class SassAutocompileView extends View
 
     compileSass: (filename) ->
         @prepareOptions()
+        @nodeSassOutput = null
         if !@options.enabled
             return
 
@@ -171,6 +178,7 @@ class SassAutocompileView extends View
             try
                 execParameters = @obtainExecParameters(params)
                 exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
+                    @nodeSassOutput = if stdout then stdout else stderr
                     if error != null
                         if error.message.indexOf('"message"') > -1
                             # Parse internal JSON in error message
@@ -318,6 +326,11 @@ class SassAutocompileView extends View
                 if @options.autoHidePanelOnError
                     @hidePanel true
 
+        if @nodeSassOutput
+            @panelOpenNodeSassOutput.removeClass('hide')
+        if @options.showNodeSassOutput
+            @openNodeSassOutput()
+
         @inProgress = false
 
 
@@ -372,11 +385,12 @@ class SassAutocompileView extends View
     showPanel: ->
         @inProgress = true
 
-        clearTimeout @timeout
+        clearTimeout(@timeout)
 
         @panelHeading.addClass('no-border')
         @panelBody.addClass('hide').empty()
         @panelLoading.removeClass('hide')
+        @panelOpenNodeSassOutput.addClass('hide')
         @panelClose.addClass('hide')
 
         atom.workspace.addBottomPanel
@@ -386,7 +400,8 @@ class SassAutocompileView extends View
 
 
     hidePanel: (withDelay = false) ->
-        @panelLoading.addClass 'hide'
+        @panelLoading.addClass('hide')
+        @panelOpenNodeSassOutput.addClass('hide')
 
         clearTimeout @timeout
 
@@ -401,3 +416,18 @@ class SassAutocompileView extends View
     showCloseButton: ->
         @panelLoading.addClass('hide')
         @panelClose.removeClass('hide')
+
+
+    openNodeSassOutput: ->
+        if @nodeSassOutput
+            if not @nodeSassOutputEditor
+                atom.workspace.open().then (editor) =>
+                    @nodeSassOutputEditor = editor
+                    editor.setText(@nodeSassOutput)
+                    editor.onDidSave =>
+                        @nodeSassOutputEditor = null
+                    editor.onDidDestroy =>
+                        @nodeSassOutputEditor = null
+            else
+                pane = atom.workspace.paneForItem(@nodeSassOutputEditor)
+                pane.activateItem(@nodeSassOutputEditor)

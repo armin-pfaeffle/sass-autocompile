@@ -10,8 +10,31 @@
         cursor: pointer;
     }
 
+    .loading-spinner-tiny {
+        margin-left: 10px;
+    }
+
+    .open-node-sass-output {
+        display: inline-block;
+        cursor: pointer;
+        color: @text-color-highlight;
+
+        &:hover {
+            color: @text-color-info;
+        }
+
+        &::before {
+            content: "—";
+            display: inline-block;
+            padding: 0 10px;
+            cursor: default;
+            color: fadeout(@text-color, 70%);
+        }
+    }
+
     .panel-body {
         padding: 15px 10px;
+
 
         p,
         .open-error-file {

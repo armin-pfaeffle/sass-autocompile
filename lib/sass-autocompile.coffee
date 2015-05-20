@@ -99,12 +99,19 @@ module.exports =
             default: false
             order: 12
 
+        showNodeSassOutput:
+            title: 'Show node-sass output after compilation'
+            description: 'If enabled detailed output of node-sass command is shown in a new tab so you can analyse output.'
+            type: 'boolean'
+            default: false
+            order: 13
+
         macOsNodeSassPath:
             title: 'ONLY FOR MAC OS: Path to \'node-sass\' command'
             description: 'Absolute path where \'node-sass\' command can be found.'
             type: 'string'
             default: '/usr/local/bin'
-            order: 13
+            order: 14
 
 
     sassAutocompileView: null

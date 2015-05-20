@@ -18,18 +18,20 @@ The reason why *sass-autocompile* needs that is because node-sass is not compati
 
 ## Usage
 
-**Important: ** *Install node.js and node-sass before, see [requirements](#requirements).*
+**Important:** *Install node.js and node-sass before, see [requirements](#requirements).*
 
 Basically you enable auto-compile on save in two steps:
 
 1. Add `.scss` as file extension to your SASS file
-2. Add at least `// out: ../css/main.css` to the **first line** of your SASS file
+2. Add at least `// out: ../css/main.css` to the **first line** of your SASS file ‒ please modifiy the relative path and the css filename
 
-But to enable advanced features have a look at the complete list of [parameters](#parameters). The [examples](#examples) give you a short demonstration about using them.
+To enable advanced features have a look at the complete list of [parameters](#parameters). The [examples](#examples) give you a short demonstration about using them.
 
 Beside the parameters you can set [plugin options](#options) which are used as general options for auto-compiling. **Important**: since version 0.5 parameters in SASS files override the general options ‒ so you can enable `Compress CSS` in options, but disable this feature for a special project by setting `compress: false` in your SASS file parameters.
 
 After saving a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can even jump to error position in the corresponding SCSS file where error occured.
+
+When using panel notification you can use **Show detailed output** link in the header caption of the panel to open detailed output of `node-sass` command (available since 0.7.0). Additionally you can set option [Show node-sass output after compilation](#show-node-sass-output-after-compilation) to automatically show output after compilation.
 
 
 ### Parameters
@@ -163,6 +165,16 @@ If enabled and you added the notification option in `Notifications`, you will se
 *__Default__: false*
 
 
+#### **Show node-sass output after compilation**
+If enabled detailed output of node-sass command is automatically shown in a new tab after each compilation. So you can analyse the output, especially when using [@debug](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_5), [@warn](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_6) or [@error](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_7) in your SASS.  
+*__Default__: false*
+
+
+#### **ONLY FOR MAC OS: Path to 'node-sass' command**
+This option is ONLY FOR MAC OS! If *sass-autocompile* can not find `node-sass` command you can set this path to where `node-sass` command is placed, so the absolute path can be used. Only use this option when Atom throws the error "command not found".  
+*_Default__: '/usr/local/bin'*
+
+
 
 ## Predefined shortcuts
 
@@ -192,6 +204,11 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 
 ## Changelog
+
+**0.7.0 - 20.05.2015**
+- New features: detailed output of node-sass can be opened in a new tab
+- New option: automatically open output of node-sass after compilation
+- Completed missing documentation
 
 **0.6.5 - 18.05.2015**
 - Bugfix: Fixed issue [#7](https://github.com/armin-pfaeffle/sass-autocompile/issues/7)
