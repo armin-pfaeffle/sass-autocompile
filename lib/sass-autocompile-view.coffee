@@ -180,10 +180,9 @@ class SassAutocompileView extends View
                 exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
                     @nodeSassOutput = if stdout then stdout else stderr
                     if error != null
-                        if error.message.indexOf('"message"') > -1
-                            # Parse internal JSON in error message
-                            json = error.message.substr( error.message.indexOf('\n') + 1 )
-                            error = JSON.parse json
+                        if error.message.indexOf('"message":') > -1
+                            errorJson = error.message.match(/{\n(.*?(\n))+}/gm);
+                            error = JSON.parse(errorJson)
                         else
                             error = error.message
 

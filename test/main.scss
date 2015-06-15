@@ -1,4 +1,4 @@
-// out: main.css, compress: true
+// out: main.css
 
 #main {
     background-color: #f00;
@@ -12,6 +12,12 @@
 
 @import "child";
 
-@debug 'test';
-@warn 'test';
-@error 'test';
+@debug 'debug message';
+@debug 'debug message';
+@debug 'debug message';
+@debug 'debug message';
+@warn 'warning message';
+@warn 'warning message';
+@warn 'warning message';
+@warn 'warning message';
+@error 'error message';

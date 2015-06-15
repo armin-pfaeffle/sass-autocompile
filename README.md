@@ -205,6 +205,10 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.7.1 - 15.06.2015**
+- Bugfix: Fixed issue [#8](https://github.com/armin-pfaeffle/sass-autocompile/issues/8)
+- Fixed and optimized error recognition
+
 **0.7.0 - 20.05.2015**
 - New features: detailed output of node-sass can be opened in a new tab
 - New option: automatically open output of node-sass after compilation
