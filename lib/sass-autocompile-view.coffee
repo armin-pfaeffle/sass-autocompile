@@ -132,6 +132,10 @@ class SassAutocompileView extends View
                     key = match[1]
 
                 value = item.substr(i + 1).trim()
+                if value.toLowerCase() in [true, 1, 'true', 'yes', 'y', '1']
+                    value = true
+                else if value.toLowerCase() in [false, 0, 'false', 'no', 'n', '0']
+                    value = false
 
                 params[key] = value
 
@@ -233,7 +237,7 @@ class SassAutocompileView extends View
 
         # --source-map
         if (params.sourceMap isnt null and !!params.sourceMap) or (params.sourceMap is null and @options.sourceMap)
-            if params.sourceMap == true or (typeof params.sourceMap == 'string' and params.sourceMap.toLowerCase() == 'true') or (params.sourceMap is null and @options.sourceMap)
+            if params.sourceMap or (params.sourceMap is null and @options.sourceMap)
                 sourceMapFilename = params.cssFilename + '.map'
             else
                 sourceMapFilename = path.resolve(path.dirname(params.file), params.sourceMap)

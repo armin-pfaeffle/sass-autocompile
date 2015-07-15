@@ -1,3 +1,6 @@
+**0.7.2 - 15.07.2015**
+- Bugfix: Fixed issue [#9](https://github.com/armin-pfaeffle/sass-autocompile/issues/9)
+
 **0.7.1 - 15.06.2015**
 - Bugfix: Fixed issue [#8](https://github.com/armin-pfaeffle/sass-autocompile/issues/8)
 - Fixed and optimized error recognition
