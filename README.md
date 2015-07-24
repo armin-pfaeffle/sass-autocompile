@@ -205,6 +205,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.7.3 - 24.07.2015**
+- Bugfix: Fixed issue [#10](https://github.com/armin-pfaeffle/sass-autocompile/issues/10)
+
 **0.7.2 - 15.07.2015**
 - Bugfix: Fixed issue [#9](https://github.com/armin-pfaeffle/sass-autocompile/issues/9)
 

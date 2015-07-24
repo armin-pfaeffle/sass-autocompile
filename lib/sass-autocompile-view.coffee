@@ -396,7 +396,9 @@ class SassAutocompileView extends View
         @panelOpenNodeSassOutput.addClass('hide')
         @panelClose.addClass('hide')
 
-        atom.workspace.addBottomPanel
+        if @panel
+            @panel.destroy()
+        @panel = atom.workspace.addBottomPanel
             item: this
 
         @removeClass 'hide'
