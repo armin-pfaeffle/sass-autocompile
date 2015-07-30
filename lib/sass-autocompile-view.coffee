@@ -98,7 +98,7 @@ class SassAutocompileView extends View
             filename = activeEditor.getURI()
             fileExtension = path.extname filename
 
-            if fileExtension.toLowerCase() == '.scss'
+            if ['.scss', '.sass'].indexOf(fileExtension.toLowerCase()) >= 0
                 @compileSass filename
 
 
