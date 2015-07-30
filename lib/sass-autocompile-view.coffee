@@ -98,7 +98,7 @@ class SassAutocompileView extends View
             filename = activeEditor.getURI()
             fileExtension = path.extname filename
 
-            if fileExtension.toLowerCase() == '.scss'
+            if fileExtension.toLowerCase() in ['.scss', '.sass']
                 @compileSass filename
 
 
@@ -398,6 +398,7 @@ class SassAutocompileView extends View
 
         if @panel
             @panel.destroy()
+
         @panel = atom.workspace.addBottomPanel
             item: this
 

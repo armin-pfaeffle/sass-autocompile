@@ -4,7 +4,7 @@ Automatically compiles SASS files on save.
 
 ---
 
-Inspired by and based on [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](https://atom.io/users/lohek), I have created a counterpart for [SASS](http://sass-lang.com/). This package automatically compiles your SASS file (file ending: `.scss`) when you save it.
+Inspired by and based on [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](https://atom.io/users/lohek), I have created a counterpart for [SASS](http://sass-lang.com/). This package automatically compiles your SASS file (file ending: `.scss` or `.sass`) when you save it.
 
 
 
@@ -22,21 +22,21 @@ The reason why *sass-autocompile* needs that is because node-sass is not compati
 
 Basically you enable auto-compile on save in two steps:
 
-1. Add `.scss` as file extension to your SASS file
+1. Add `.scss` or `.sass` as file extension to your SASS file
 2. Add at least `// out: ../css/main.css` to the **first line** of your SASS file ‒ please modifiy the relative path and the css filename
 
 To enable advanced features have a look at the complete list of [parameters](#parameters). The [examples](#examples) give you a short demonstration about using them.
 
 Beside the parameters you can set [plugin options](#options) which are used as general options for auto-compiling. **Important**: since version 0.5 parameters in SASS files override the general options ‒ so you can enable `Compress CSS` in options, but disable this feature for a special project by setting `compress: false` in your SASS file parameters.
 
-After saving a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can even jump to error position in the corresponding SCSS file where error occured.
+After saving a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can even jump to error position in the corresponding SASS file where error occured.
 
 When using panel notification you can use **Show detailed output** link in the header caption of the panel to open detailed output of `node-sass` command (available since 0.7.0). Additionally you can set option [Show node-sass output after compilation](#show-node-sass-output-after-compilation) to automatically show output after compilation.
 
 
 ### Parameters
 
-Add following parameters in *comma-separated* way to the **first line** of your SASS file (file extension: `.scss`). See [examples](#examples) for demonstration, especially for `main` parameter:
+Add following parameters in *comma-separated* way to the **first line** of your SASS file (file extension: `.scss` or `.sass`). See [examples](#examples) for demonstration, especially for `main` parameter:
 ```js
 // path of target CSS file
 out: main.css
@@ -140,7 +140,7 @@ Path to look for imported files (`@import` declarations).
 
 #### **Notifications**
 This options allows you to decide which feedback you want to see when SASS files are compiled: notification and/or panel.  
-**Panel**: The panel is shown at the bottom of the editor. When starting the compilation it's only a small header with a throbber. After compiliation a success or error message is shown with reference to the CSS file, or on error the SCSS file. By clicking on the message you can access the CSS or error file.  
+**Panel**: The panel is shown at the bottom of the editor. When starting the compilation it's only a small header with a throbber. After compiliation a success or error message is shown with reference to the CSS file, or on error the SASS file. By clicking on the message you can access the CSS or error file.  
 **Notification**: The default atom notifications are used for output.  
 *__Default__: Panel*
 
@@ -205,6 +205,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.7.4 - 30.07.2015**
+- Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)
+
 **0.7.3 - 24.07.2015**
 - Bugfix: Fixed issue [#10](https://github.com/armin-pfaeffle/sass-autocompile/issues/10)
 
@@ -242,7 +245,7 @@ For other concerns like questions or feeback [have a look at the discussion thre
 - Bugfix: Starting Atom via Dock on Mac OS X leads to "command not found" error"
 
 **0.5.0 - 09.04.2015**
-- **Changed behaviour**: specifying parameters in SCSS file overrides settings and not vice versa
+- **Changed behaviour**: specifying parameters in SASS file overrides settings and not vice versa
 - File extension detection (.scss) is now case **insensitive**
 - Code refactoring
 - Bugfix: Toggling option "Compress CSS" toggled enabled option
@@ -256,7 +259,7 @@ For other concerns like questions or feeback [have a look at the discussion thre
 - Bugfix: spaces in filenames leads to "File does not exist" errors
 
 **0.3.2 - 10.03.2015**
-- Fixed bug that opens a SCSS file two times when clicking on panel error message
+- Fixed bug that opens a SASS file two times when clicking on panel error message
 - Fixed issue [#2](https://github.com/armin-pfaeffle/sass-autocompile/issues/2)
 
 **0.3.1 - 08.03.2015**

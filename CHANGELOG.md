@@ -1,3 +1,9 @@
+**0.7.4 - 30.07.2015**
+- Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)
+
+**0.7.3 - 24.07.2015**
+- Bugfix: Fixed issue [#10](https://github.com/armin-pfaeffle/sass-autocompile/issues/10)
+
 **0.7.2 - 15.07.2015**
 - Bugfix: Fixed issue [#9](https://github.com/armin-pfaeffle/sass-autocompile/issues/9)
 
@@ -32,7 +38,7 @@
 - Bugfix: Starting Atom via Dock on Mac OS X leads to "command not found" error"
 
 **0.5.0 - 09.04.2015**
-- **Changed behaviour**: specifying parameters in SCSS file overrides settings and not vice versa
+- **Changed behaviour**: specifying parameters in SASS file overrides settings and not vice versa
 - File extension detection (.scss) is now case **insensitive**
 - Code refactoring
 - Bugfix: Toggling option "Compress CSS" toggled enabled option
@@ -46,7 +52,7 @@
 - Bugfix: spaces in filenames leads to "File does not exist" errors
 
 **0.3.2 - 10.03.2015**
-- Fixed bug that opens a SCSS file two times when clicking on panel error message
+- Fixed bug that opens a SASS file two times when clicking on panel error message
 - Fixed issue [#2](https://github.com/armin-pfaeffle/sass-autocompile/issues/2)
 
 **0.3.1 - 08.03.2015**
