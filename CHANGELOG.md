@@ -1,3 +1,6 @@
+**0.7.5 - 30.07.2015**
+- Fixed includePath parameter option, so it works correctly now
+
 **0.7.4 - 30.07.2015**
 - Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)
 

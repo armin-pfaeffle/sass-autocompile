@@ -200,10 +200,15 @@ For other concerns like questions or feeback [have a look at the discussion thre
 ## Roadmap
 
 - Add node-sass as dependency, so we do not need extra node.js and node-sass installation
+- Double output: output normal and minified file
+- Recognize debug/info/error output and print it in info panel or print hint that such information is available
 
 
 
 ## Changelog
+
+**0.7.5 - 30.07.2015**
+- Fixed includePath parameter option, so it works correctly now
 
 **0.7.4 - 30.07.2015**
 - Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)

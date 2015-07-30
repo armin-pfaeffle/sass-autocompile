@@ -252,10 +252,18 @@ class SassAutocompileView extends View
             execParameters.push('--source-map-contents')
 
         # --include-path
+        includePath = null
         if !!params.includePath
-            execParameters.push('--include-path "' + params.includePath + '"')
+            includePath = params.includePath
         else if !!@options.includePath
-            execParameters.push('--include-path "' + @options.includePath + '"')
+            includePath = @options.includePath
+
+        if includePath
+            if not path.isAbsolute(includePath)
+                workingDirectory = path.dirname(params.file)
+                includePath = path.join(workingDirectory , includePath)
+
+            execParameters.push('--include-path "' + path.resolve(includePath) + '"')
 
         # CSS target and output file
         execParameters.push('"' + params.file + '"')

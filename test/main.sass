@@ -1,4 +1,4 @@
-// out: main-sass.css, compress: false, sourceMap: true
+// out: main-sass.css, compress: false, sourceMap: true, includePath: ./include
 
 #main
   color: blue
@@ -10,3 +10,7 @@
       family: serif
     &:hover
       background-color: #eee
+
+@import "include"
+.foo
+    content: hello-world()
