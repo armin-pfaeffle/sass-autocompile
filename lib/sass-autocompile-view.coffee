@@ -62,7 +62,7 @@ class SassAutocompileView extends View
         @options =
             enabled: SassAutocompileView.getOption('enabled')
 
-            compress: SassAutocompileView.getOption('compress')
+            outputStyle: SassAutocompileView.getOption('outputStyle')
             sourceMap: SassAutocompileView.getOption('sourceMap')
             sourceMapEmbed: SassAutocompileView.getOption('sourceMapEmbed')
             sourceMapContents: SassAutocompileView.getOption('sourceMapContents')
@@ -111,7 +111,7 @@ class SassAutocompileView extends View
             file: filename
             out: null
             main: null
-            compress: null
+            outputStyle: null
             sourceMap: null
             sourceMapEmbed: null
             sourceMapContents: null
@@ -228,8 +228,9 @@ class SassAutocompileView extends View
 
         execParameters = []
 
-        # --output-style
-        execParameters.push('--output-style ' + (if params.compress or (params.compress is null and @options.compress) then 'compressed' else 'nested'))
+        if params.outputStyle or (params.outputStyle is null and @options.outputStyle)
+          outputStyle = @options.outputStyle.toLowerCase()
+          execParameters.push('--output-style ' + outputStyle)
 
         # --source-comments
         if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
