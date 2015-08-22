@@ -13,14 +13,14 @@ module.exports =
             default: true
             order: 1
 
-
         # node-sass options
-
-        compress:
-            title: 'Compress CSS'
-            description: 'If enabled created CSS is compressed (minified) by node-sass.'
-            type: 'boolean'
-            default: false
+        
+        outputStyle:
+            title: 'Output style'
+            description: 'Choose the output style of the CSS'
+            type: 'string'
+            default: 'Nested'
+            enum: ['Nested', 'Compact', 'Expanded', 'Compressed']
             order: 2
 
         sourceMap:
