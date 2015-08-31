@@ -13,8 +13,9 @@ module.exports =
             default: true
             order: 1
 
+
         # node-sass options
-        
+
         outputStyle:
             title: 'Output style'
             description: 'Choose the output style of the CSS'
@@ -120,9 +121,11 @@ module.exports =
     activate: (state) ->
         @sassAutocompileView = new SassAutocompileView(state.sassAutocompileViewState)
 
-        # TODO: Remove later!!!!!
-        # Temporary code for removing "alwaysCompress" setting, because of renaming this option
-        SassAutocompileView.unsetOption('alwaysCompress')
+        if not SassAutocompileView.getOption('outputStyle')
+            if SassAutocompileView.getOption('compress')
+                SassAutocompileView.getOption('outputStyle', 'Compressed')
+            else
+                SassAutocompileView.getOption('outputStyle', 'Nested')
 
         atom.commands.add 'atom-workspace',
             'sass-autocompile:toggle-enabled': =>
@@ -131,11 +134,23 @@ module.exports =
             'sass-autocompile:toggle-always-compress': =>
                 @toggleCompress()
 
+            'sass-autocompile:select-output-style-nested': =>
+                @selectOutputStyle('Nested')
+
+            'sass-autocompile:select-output-style-compact': =>
+                @selectOutputStyle('Compact')
+
+            'sass-autocompile:select-output-style-expanded': =>
+                @selectOutputStyle('Expanded')
+
+            'sass-autocompile:select-output-style-compressed': =>
+                @selectOutputStyle('Compressed')
+
             'sass-autocompile:close-message-panel': (e) =>
                 @closeMessagePanel()
                 e.abortKeyBinding()
 
-            @addMenuItems()
+        @registerConfigObserver()
 
 
     deactivate: ->
@@ -155,37 +170,27 @@ module.exports =
         @updateMenuItems()
 
 
-    toggleCompress: ->
-        SassAutocompileView.setOption('compress', !SassAutocompileView.getOption('compress'))
+    selectOutputStyle: (outputStyle) ->
+        SassAutocompileView.setOption('outputStyle', outputStyle)
         @updateMenuItems()
 
 
-    addMenuItems: ->
-        atom.menu.add [ {
-            label: 'Packages'
-            submenu : [
-                {
-                    label: 'SASS Autocompile'
-                    submenu : [
-                        { label : 'Enable', command: 'sass-autocompile:toggle-enabled' }
-                        { label : 'Always Compress', command: 'sass-autocompile:toggle-always-compress' }
-                    ]
-                }
-            ]
-        } ]
-        @updateMenuItems()
+    registerConfigObserver: ->
+        atom.config.observe SassAutocompileView.OPTIONS_PREFIX + 'outputStyle', (newValue) =>
+            @updateMenuItems()
 
 
     updateMenuItems: ->
         for menu in atom.menu.template
             if menu.label == 'Packages' || menu.label == '&Packages'
-                for submenu in menu.submenu
-                    if submenu.label == 'SASS Autocompile'
-                        item = submenu.submenu[0]
-                        item.label = (if SassAutocompileView.getOption('enabled') then 'Disable' else 'Enable')
+                for packagesSubenu in menu.submenu
+                    if packagesSubenu.label == 'SASS Autocompile'
+                        toggleEnabledItem = packagesSubenu.submenu[0]
+                        toggleEnabledItem.label = (if SassAutocompileView.getOption('enabled') then 'Disable' else 'Enable')
 
-                        item = submenu.submenu[1]
-                        item.label = (if SassAutocompileView.getOption('compress') then 'Disable' else 'Enable') + ' \'Compress CSS\''
+                        outputStyleSubmenu = packagesSubenu.submenu[1]
+                        for outputStyleItem in outputStyleSubmenu.submenu
+                            outputStyleItem.checked = outputStyleItem.label.toLowerCase() is SassAutocompileView.getOption('outputStyle').toLowerCase()
 
         atom.menu.update()
 

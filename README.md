@@ -27,7 +27,7 @@ Basically you enable auto-compile on save in two steps:
 
 To enable advanced features have a look at the complete list of [parameters](#parameters). The [examples](#examples) give you a short demonstration about using them.
 
-Beside the parameters you can set [plugin options](#options) which are used as general options for auto-compiling. **Important**: since version 0.5 parameters in SASS files override the general options ‒ so you can enable `Compress CSS` in options, but disable this feature for a special project by setting `compress: false` in your SASS file parameters.
+Beside the parameters you can set [plugin options](#options) which are used as general options for auto-compiling. **Important**: since version 0.5 parameters in SASS files override the general options ‒ so you can set 'Output Style: Compressed' in options, but disable this feature for a special project by setting `outputStyle: nested` in your SASS file parameters.
 
 After saving a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can even jump to error position in the corresponding SASS file where error occured.
 
@@ -42,7 +42,7 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 out: main.css
 
 // if true CSS file is compressed
-compress: true / false
+outputStyle: nested / compact / expanded / compressed
 
 // path to your main SASS file to be compiled
 // see http://sass-guidelin.es/#main-file
@@ -65,7 +65,10 @@ sourceComments: true / false
 // path to look for imported files [*]
 includePath: ../my-framework/scss/
 ```
+
  (*) For further information have a look at the [node-sass documentation](https://github.com/sass/node-sass).
+
+ The old parameter `compress: true / false` is still supported, although you should use `outputStyle` parameter. If you set `compress: true` output style will be set to `Compressed`. If you set `compress: false` output style is set to `Nested`.
 
 
 ### Examples
@@ -75,9 +78,9 @@ When you add the `out` parameter your SASS file is compiled to `main.css` in the
 // out: ../css/main.css
 ```
 
-To additionally compress the output you have to add `compress: true`, or you enable option *Compress CSS*:
+To additionally compress the output you have to add `outputStyle: compressed` or set option *Output Style*:
 ```
-// out: ../css/main.css, compress: true
+// out: ../css/main.css, outputStyle: compressed
 ```
 
 If you use `@import` command in SASS, you should define the `main` parameter in the *child files*. Imagine you have the following structure:
@@ -89,7 +92,7 @@ layout.scss     // contains layout definitions
 
 Add the following comment to `main.scss` to enabled auto compilation on save.
 ```
-// out: ../css/main.css, compress: true
+// out: ../css/main.css, outputStyle: compressed
 ```
 
 ... and add this to `colors.scss` and `layout.scss` to enable auto compilation on saving each of this two *child files*.
@@ -108,9 +111,14 @@ You can use this option to disable auto compiling SASS file on save. This is esp
 *__Default__: true*
 
 
-#### **Compress CSS**
-If enabled this option ensures that the output is compressed, even if you do **not** use the `compress` parameter.  
-*__Default__: false*
+#### **Output Style**
+With this option you can decide which output style you want to use. You have four options:
+- Nested
+- Compact
+- Expanded
+- Compressed
+
+*__Default__: Compressed*
 
 
 #### **Build source map**
@@ -151,7 +159,7 @@ Select on which event the panel should automatically disappear. If you want to h
 
 
 #### **Panel-auto-hide delay**
-Delay after which panel is automatically hidden.
+Delay after which panel is automatically hidden.  
 *__Default__: 3000*
 
 
@@ -172,7 +180,7 @@ If enabled detailed output of node-sass command is automatically shown in a new 
 
 #### **ONLY FOR MAC OS: Path to 'node-sass' command**
 This option is ONLY FOR MAC OS! If *sass-autocompile* can not find `node-sass` command you can set this path to where `node-sass` command is placed, so the absolute path can be used. Only use this option when Atom throws the error "command not found".  
-*_Default__: '/usr/local/bin'*
+*__Default__: '/usr/local/bin'*
 
 
 
@@ -206,6 +214,12 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 
 ## Changelog
+
+**0.8.0 - 31.08.2015**
+- New option: Output style (thanks to [reardestani](https://github.com/reardestani))
+- Improved menu items with output style selection
+- Option 'Compress CSS' removed because of new option output style
+- Minor improvements
 
 **0.7.5 - 30.07.2015**
 - Fixed includePath parameter option, so it works correctly now

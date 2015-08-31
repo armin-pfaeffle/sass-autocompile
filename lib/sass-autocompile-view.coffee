@@ -112,6 +112,7 @@ class SassAutocompileView extends View
             out: null
             main: null
             outputStyle: null
+            compress: null # this is only a fallback option for the newer option outputStyle
             sourceMap: null
             sourceMapEmbed: null
             sourceMapContents: null
@@ -190,9 +191,9 @@ class SassAutocompileView extends View
                         else
                             error = error.message
 
-                        @endCompiling false, error
+                        @endCompiling false, error, @getOutputStyle(params)
                     else
-                        @endCompiling true, params.cssFilename, params.compress
+                        @endCompiling true, params.cssFilename, @getOutputStyle(params)
             catch e
                 errorMessage = "#{e.message} - index: #{e.index}, line: #{e.line}, file: #{e.filename}"
                 @endCompiling false, errorMessage
@@ -228,9 +229,9 @@ class SassAutocompileView extends View
 
         execParameters = []
 
-        if params.outputStyle or (params.outputStyle is null and @options.outputStyle)
-          outputStyle = @options.outputStyle.toLowerCase()
-          execParameters.push('--output-style ' + outputStyle)
+        # --output-style
+        outputStyle = @getOutputStyle(params)
+        execParameters.push('--output-style ' + outputStyle)
 
         # --source-comments
         if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
@@ -273,6 +274,20 @@ class SassAutocompileView extends View
         return execParameters
 
 
+    getOutputStyle: (params) ->
+        # If user has defined "compress" paramter as inline parameter, we use this value, but
+        # it's only a fallback. Users should use outputStyle now!
+        if params.compress
+            params.outputStyle = 'compressed'
+
+        if typeof params.outputStyle is 'string' and params.outputStyle.toLowerCase() in ['nested', 'compact', 'expanded', 'compressed']
+            outputStyle = params.outputStyle.toLowerCase()
+        else
+            outputStyle = @options.outputStyle.toLowerCase()
+
+        return outputStyle
+
+
     showInfoNotification: (title, message, forceShow = false) ->
         if !@options.showInfoNotification and !forceShow
             return
@@ -313,14 +328,14 @@ class SassAutocompileView extends View
                 @setPanelMessage filename, 'terminal'
 
 
-    endCompiling: (wasSuccessful, message, compressed) ->
+    endCompiling: (wasSuccessful, message, outputStyle) ->
         if wasSuccessful
-            notificationMessage = message + (if compressed then ' (compressed)' else '')
+            notificationMessage = message + (if outputStyle then ' (' + outputStyle + ')' else '')
             @showSuccessNotification 'Successfully compiled to:', notificationMessage
 
             if @options.showPanel
                 @setPanelCaption 'SASS AutoCompile: Successfully compiled'
-                @setSuccessMessageToPanel message, compressed
+                @setSuccessMessageToPanel message, outputStyle
                 @showCloseButton()
                 if @options.autoHidePanelOnSuccess
                     @hidePanel true
@@ -357,11 +372,11 @@ class SassAutocompileView extends View
                 @span class: "icon #{icon} text-info", message
 
 
-    setSuccessMessageToPanel: (filename, compressed) ->
+    setSuccessMessageToPanel: (filename, outputStyle) ->
         @panelBody.removeClass('hide').append $$ ->
             @p class: 'open-css-file', =>
                 @span class: "icon icon-check text-success", filename
-                @span class: "compressed",  (if compressed then ' (compressed)' else '')
+                @span class: "outputStyle",  (if outputStyle then ' (' + outputStyle + ')' else '')
 
         @find('.open-css-file').on 'click', (event) =>
             @openFile filename

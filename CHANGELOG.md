@@ -1,3 +1,9 @@
+**0.8.0 - 31.08.2015**
+- New option: Output style (thanks to [reardestani](https://github.com/reardestani))
+- Improved menu items with output style selection
+- Option 'Compress CSS' removed because of new option output style
+- Minor improvements
+
 **0.7.5 - 30.07.2015**
 - Fixed includePath parameter option, so it works correctly now
 
