@@ -1,3 +1,11 @@
+**0.9.0 - 31.08.2015**
+- New option: Indent type / as inline parameter: indentType
+- New option: Indent width / as inline parameter: indentWidth
+- New option: Linefeed / as inline parameter: linefeed
+- New option: Precision / as inline parameter: precision
+- New option: Filename to custom importer / as inline parameter: importer
+- New option: Filename to custom functions / as inline parameter: functions
+
 **0.8.0 - 31.08.2015**
 - New option: Output style (thanks to [reardestani](https://github.com/reardestani))
 - Improved menu items with output style selection

@@ -63,11 +63,17 @@ class SassAutocompileView extends View
             enabled: SassAutocompileView.getOption('enabled')
 
             outputStyle: SassAutocompileView.getOption('outputStyle')
+            indentType: SassAutocompileView.getOption('indentType')
+            indentWidth: SassAutocompileView.getOption('indentWidth')
+            linefeed: SassAutocompileView.getOption('linefeed')
             sourceMap: SassAutocompileView.getOption('sourceMap')
             sourceMapEmbed: SassAutocompileView.getOption('sourceMapEmbed')
             sourceMapContents: SassAutocompileView.getOption('sourceMapContents')
             sourceComments: SassAutocompileView.getOption('sourceComments')
             includePath: SassAutocompileView.getOption('includePath')
+            precision: SassAutocompileView.getOption('precision')
+            importer: SassAutocompileView.getOption('importer')
+            functions: SassAutocompileView.getOption('functions')
 
             showInfoNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
             showSuccessNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
@@ -113,11 +119,17 @@ class SassAutocompileView extends View
             main: null
             outputStyle: null
             compress: null # this is only a fallback option for the newer option outputStyle
+            indentType: null
+            indentWidth: null
+            linefeed: null
             sourceMap: null
             sourceMapEmbed: null
             sourceMapContents: null
             sourceComments: null
             includePath: null
+            precision: null
+            importer: null
+            functions: null
 
         parse = (firstLine) =>
             firstLine.split(',').forEach (item) ->
@@ -228,10 +240,29 @@ class SassAutocompileView extends View
         path = require('path')
 
         execParameters = []
+        workingDirectory = path.dirname(params.file)
 
         # --output-style
         outputStyle = @getOutputStyle(params)
         execParameters.push('--output-style ' + outputStyle)
+
+        # --indent-type
+        if typeof params.indentType is 'string' and params.indentType.toLowerCase() in ['space', 'tab']
+            execParameters.push('--indent-type ' + params.indentType.toLowerCase())
+        else
+            execParameters.push('--indent-type ' + @options.indentType.toLowerCase())
+
+        # --indent-width
+        if params.indentWidth isnt null
+            execParameters.push('--indent-width ' + params.indentWidth)
+        else
+            execParameters.push('--indent-width ' + @options.indentWidth)
+
+        # --linefeed
+        if typeof params.linefeed is 'string' and params.linefeed.toLowerCase() in ['cr', 'crlf', 'lf', 'lfcr']
+            execParameters.push('--linefeed ' + params.linefeed.toLowerCase())
+        else
+            execParameters.push('--linefeed ' + @options.linefeed)
 
         # --source-comments
         if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
@@ -262,10 +293,39 @@ class SassAutocompileView extends View
 
         if includePath
             if not path.isAbsolute(includePath)
-                workingDirectory = path.dirname(params.file)
                 includePath = path.join(workingDirectory , includePath)
 
             execParameters.push('--include-path "' + path.resolve(includePath) + '"')
+
+        # --precision
+        if params.precision isnt null
+            execParameters.push('--precision ' + params.precision)
+        else
+            execParameters.push('--precision ' + @options.precision)
+
+        # --importer
+        importerFilename = false
+        if typeof params.importer is 'string' and params.importer.length > 0
+            importerFilename = params.importer
+        else if @options.importer.length > 0
+            importerFilename = @options.importer
+
+        if importerFilename
+            if not path.isAbsolute(importerFilename)
+                importerFilename = path.join(workingDirectory , importerFilename)
+            execParameters.push('--importer "' + path.resolve(importerFilename) + '"')
+
+        # --functions
+        functionsFilename = false
+        if typeof params.functions is 'string' and params.functions.length > 0
+            functionsFilename = params.functions
+        else if @options.functions.length > 0
+            functionsFilename = @options.functions
+
+        if functionsFilename
+            if not path.isAbsolute(functionsFilename)
+                functionsFilename = path.join(workingDirectory , functionsFilename)
+            execParameters.push('--functions "' + path.resolve(functionsFilename) + '"')
 
         # CSS target and output file
         execParameters.push('"' + params.file + '"')
