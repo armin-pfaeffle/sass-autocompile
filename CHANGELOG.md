@@ -1,6 +1,6 @@
 **0.9.1 - 17.09.2015**
 - Modified option: Killed darwin-only to allow any OS (eg Ubuntu – which has process.platform "linux") to enjoy the "Path to 'node-sass'" option.
-- 
+
 **0.9.0 - 31.08.2015**
 - New option: Indent type / as inline parameter: indentType
 - New option: Indent width / as inline parameter: indentWidth
