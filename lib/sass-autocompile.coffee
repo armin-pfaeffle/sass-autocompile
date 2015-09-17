@@ -156,7 +156,7 @@ module.exports =
             order: 65
 
         macOsNodeSassPath:
-            title: 'ONLY FOR MAC OS: Path to \'node-sass\' command'
+            title: 'Path to \'node-sass\' command (might fix \'node-sass not found\' issues)'
             description: 'Absolute path where \'node-sass\' command can be found'
             type: 'string'
             default: '/usr/local/bin'
