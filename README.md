@@ -226,8 +226,8 @@ If enabled detailed output of node-sass command is automatically shown in a new 
 *__Default__: false*
 
 
-#### ONLY FOR MAC OS: Path to 'node-sass' command
-This option is ONLY FOR MAC OS! If *sass-autocompile* can not find `node-sass` command you can set this path to where `node-sass` command is placed, so the absolute path can be used. Only use this option when Atom throws the error "command not found".  
+#### Path to 'node-sass' command
+This option is especially for Mac OS and Linux systems like Ubuntu. If *sass-autocompile* can not find `node-sass` command you can set this path to where `node-sass` command is placed, so the absolute path can be used. Only use this option when Atom throws the error "command not found".  
 *__Default__: '/usr/local/bin'*
 
 
