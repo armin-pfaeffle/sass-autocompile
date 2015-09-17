@@ -225,10 +225,13 @@ class SassAutocompileView extends View
 
         # If it's Mac OS we have to add macOsNodeSassPath to command and to environment variable
         # PATH so shell AND node.js can find node-sass command
-        if process.platform is "darwin"
-            path = require('path')
-            command = path.join(@options.macOsNodeSassPath, command)
-            environment.PATH += ":#{@options.macOsNodeSassPath}"
+        
+        # Change: let user decide for himself if user wants to set a fixed part. 
+        # Reason: process.platform "linux" (eg Ubuntu) tends to need this fix too.
+        # if process.platform is "darwin"
+        path = require('path')
+        command = path.join(@options.macOsNodeSassPath, command)
+        environment.PATH += ":#{@options.macOsNodeSassPath}"
 
         return {
             command: command,
