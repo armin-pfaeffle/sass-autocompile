@@ -1,3 +1,6 @@
+**0.9.1 - 17.09.2015**
+- Modified option: Killed darwin-only to allow any OS (eg Ubuntu – which has process.platform "linux") to enjoy the "Path to 'node-sass'" option.
+- 
 **0.9.0 - 31.08.2015**
 - New option: Indent type / as inline parameter: indentType
 - New option: Indent width / as inline parameter: indentWidth
@@ -16,7 +19,7 @@
 - Fixed includePath parameter option, so it works correctly now
 
 **0.7.4 - 30.07.2015**
-- Added support for `.sass` file extension (thanks to [Chris Kj�rsig](https://github.com/cmk2179) for this idea!)
+- Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)
 
 **0.7.3 - 24.07.2015**
 - Bugfix: Fixed issue [#10](https://github.com/armin-pfaeffle/sass-autocompile/issues/10)
