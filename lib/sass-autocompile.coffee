@@ -4,7 +4,7 @@ SassAutocompileOptions = require('./options')
 SassAutocompileView = require('./sass-autocompile-view')
 NodeSassCompiler = require('./compiler')
 
-file = require('./File')
+file = require('./file')
 
 
 module.exports =

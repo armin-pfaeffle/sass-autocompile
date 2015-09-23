@@ -442,6 +442,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.10.1 - 23.09.2015**
+- Bugfix: "Cannot find module './File'"
+
 **0.10.0 - 22.09.2015**
 - Completely rewritten package
 - Compile to file and direct compilation possible
