@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.0.3",
-    "mkdirp": "latest"
+    "event-kit": "^1.2.0",
+    "node-uuid": "^1.4.3"
   }
 }

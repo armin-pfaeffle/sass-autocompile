@@ -1,514 +1,228 @@
-{$$, View} = require 'atom-space-pen-views'
+{$, $$, View} = require('atom-space-pen-views')
+
+fs = require('fs')
+file = require('./file')
+
 
 module.exports =
 class SassAutocompileView extends View
 
+    @captionPrefix = 'SASS-Autocompile: '
+    @clickableLinksCounter = 0
+
+
     @content: ->
-        @div class: 'sass-autocompile atom-panel panel-bottom hide', =>
+        @div class: 'sass-autocompile atom-panel panel-bottom', =>
             @div class: 'inset-panel', =>
                 @div outlet: 'panelHeading', class: 'panel-heading no-border', =>
                     @span
                         outlet: 'panelHeaderCaption'
                         class: 'header-caption'
-                        'SASS AutoCompile: Compiling...'
-                    @span
-                        outlet: 'panelLoading'
-                        class: 'inline-block loading loading-spinner-tiny hide'
                     @span
                         outlet: 'panelOpenNodeSassOutput'
                         class: 'open-node-sass-output hide'
                         click: 'openNodeSassOutput'
                         'Show detailed output'
-                    @div class: 'inline-block pull-right', =>
+                    @span
+                        outlet: 'panelLoading'
+                        class: 'inline-block loading loading-spinner-tiny hide'
+                    @div outlet: 'panelRightTopOptions', class: 'inline-block pull-right right-top-options', =>
                         @button
                             outlet: 'panelClose'
-                            class: 'btn btn-close hide'
+                            class: 'btn btn-close'
                             click: 'hidePanel'
                             'Close'
-                @div outlet: 'panelBody', class: 'panel-body padded hide', =>
+                @div
+                    outlet: 'panelBody'
+                    class: 'panel-body padded hide'
 
 
-    @OPTIONS_PREFIX = 'sass-autocompile.'
-
-
-    @getOption: (name) ->
-        return atom.config.get(SassAutocompileView.OPTIONS_PREFIX + name)
-
-
-    @setOption: (name, value) ->
-        atom.config.set(SassAutocompileView.OPTIONS_PREFIX + name, value)
-
-
-    @unsetOption: (name) ->
-        atom.config.unset(SassAutocompileView.OPTIONS_PREFIX + name)
+    constructor: (options, args...) ->
+        super(args)
+        @options = options
+        @panel = atom.workspace.addBottomPanel
+            item: this
+            visible: false
 
 
     initialize: (serializeState) ->
-        @inProgress = false
-        @timeout = null
-
-        atom.workspace.observeTextEditors (editor) =>
-            editor.onDidSave =>
-                if !@inProgress
-                    @compile editor
 
 
-    # Tear down any state and detach
     destroy: ->
+        clearTimeout(@automaticHidePanelTimeout)
+        @panel.destroy()
         @detach()
 
 
-    prepareOptions: ->
-        @options =
-            enabled: SassAutocompileView.getOption('enabled')
+    updateOptions: (options) ->
+        @options = options
 
-            outputStyle: SassAutocompileView.getOption('outputStyle')
-            indentType: SassAutocompileView.getOption('indentType')
-            indentWidth: SassAutocompileView.getOption('indentWidth')
-            linefeed: SassAutocompileView.getOption('linefeed')
-            sourceMap: SassAutocompileView.getOption('sourceMap')
-            sourceMapEmbed: SassAutocompileView.getOption('sourceMapEmbed')
-            sourceMapContents: SassAutocompileView.getOption('sourceMapContents')
-            sourceComments: SassAutocompileView.getOption('sourceComments')
-            includePath: SassAutocompileView.getOption('includePath')
-            precision: SassAutocompileView.getOption('precision')
-            importer: SassAutocompileView.getOption('importer')
-            functions: SassAutocompileView.getOption('functions')
 
-            showInfoNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
-            showSuccessNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
-            showErrorNotification: SassAutocompileView.getOption('notifications') in ['Notifications', 'Panel, Notifications']
-
-            autoHideInfoNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
-            autoHideSuccessNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Info, Success', 'Info, Success, Error']
-            autoHideErrorNotification: SassAutocompileView.getOption('autoHideNotifications') in ['Error', 'Info, Success, Error']
-
-            showPanel: SassAutocompileView.getOption('notifications') in ['Panel', 'Panel, Notifications']
-
-            autoHidePanelOnSuccess: SassAutocompileView.getOption('autoHidePanel') in ['Success', 'Success, Error']
-            autoHidePanelOnError: SassAutocompileView.getOption('autoHidePanel') in ['Error', 'Success, Error']
-            autoHidePanelDelay: SassAutocompileView.getOption('autoHidePanelDelay')
-
-            showStartCompilingNotification: SassAutocompileView.getOption('showStartCompilingNotification')
-
-            showNodeSassOutput : SassAutocompileView.getOption('showNodeSassOutput')
-
-            macOsNodeSassPath: SassAutocompileView.getOption('macOsNodeSassPath')
-
-
-    compile: (editor) ->
-        path = require 'path'
-
-        activeEditor = atom.workspace.getActiveTextEditor()
-        if activeEditor and activeEditor.getURI
-            filename = activeEditor.getURI()
-            fileExtension = path.extname filename
-
-            if fileExtension.toLowerCase() in ['.scss', '.sass']
-                @compileSass filename
-
-
-    getParams: (filename, callback) ->
-        fs = require 'fs'
-        path = require 'path'
-        readline = require 'readline'
-
-        params =
-            file: filename
-            out: null
-            main: null
-            outputStyle: null
-            compress: null # this is only a fallback option for the newer option outputStyle
-            indentType: null
-            indentWidth: null
-            linefeed: null
-            sourceMap: null
-            sourceMapEmbed: null
-            sourceMapContents: null
-            sourceComments: null
-            includePath: null
-            precision: null
-            importer: null
-            functions: null
-
-        parse = (firstLine) =>
-            firstLine.split(',').forEach (item) ->
-                i = item.indexOf ':'
-
-                if i < 0
-                    return
-
-                key = item.substr(0, i).trim()
-                match = /^\s*\/\/\s*(.+)/.exec(key);
-
-                if match
-                    key = match[1]
-
-                value = item.substr(i + 1).trim()
-                if value.toLowerCase() in [true, 1, 'true', 'yes', 'y', '1']
-                    value = true
-                else if value.toLowerCase() in [false, 0, 'false', 'no', 'n', '0']
-                    value = false
-
-                params[key] = value
-
-            if params.main isnt null
-                parentFilename = path.resolve(path.dirname(filename), params.main)
-                @getParams parentFilename, callback
-            else
-                callback params
-
-        if !fs.existsSync filename
-            @showErrorNotification 'Path does not exist:', "#{filename}", true
-            @inProgress = false
-            return null
-
-        # Read and parse first line
-        rl = readline.createInterface
-            input: fs.createReadStream filename
-            output: process.stdout
-            terminal: false
-
-        firstLine = null
-        rl.on 'line', (line) ->
-            if firstLine is null
-                firstLine = line
-                parse firstLine
-
-
-    compileSass: (filename) ->
-        @prepareOptions()
-        @nodeSassOutput = null
-        if !@options.enabled
-            return
-
-        path = require('path')
-        exec = require('child_process').exec
-
-        compile = (params) =>
-            if params.out is null
-                return
-
-            params.cssFilename = path.resolve(path.dirname(params.file), params.out)
-
-            @startCompiling(params.file)
-            try
-                execParameters = @obtainExecParameters(params)
-                exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
-                    @nodeSassOutput = if stdout then stdout else stderr
-                    if error != null
-                        if error.message.indexOf('"message":') > -1
-                            errorJson = error.message.match(/{\n(.*?(\n))+}/gm);
-                            error = JSON.parse(errorJson)
-                        else
-                            error = error.message
-
-                        @endCompiling false, error, @getOutputStyle(params)
-                    else
-                        @endCompiling true, params.cssFilename, @getOutputStyle(params)
-            catch e
-                errorMessage = "#{e.message} - index: #{e.index}, line: #{e.line}, file: #{e.filename}"
-                @endCompiling false, errorMessage
-
-        @getParams filename, (params) ->
-            if params isnt null
-                compile params
-
-
-    obtainExecParameters: (params) ->
-        # Build command string
-        nodeSassParameters = @buildNodeSassParameters(params)
-        command = 'node-sass ' + nodeSassParameters.join(' ')
-
-        # Clone current environment
-        environment = Object.create(process.env)
-
-        # If it's Mac OS we have to add macOsNodeSassPath to command and to environment variable
-        # PATH so shell AND node.js can find node-sass command
-        if process.platform is "darwin"
-            path = require('path')
-            command = path.join(@options.macOsNodeSassPath, command)
-            environment.PATH += ":#{@options.macOsNodeSassPath}"
-
-        return {
-            command: command,
-            environment: environment
-        }
-
-
-    buildNodeSassParameters: (params) ->
-        path = require('path')
-
-        execParameters = []
-        workingDirectory = path.dirname(params.file)
-
-        # --output-style
-        outputStyle = @getOutputStyle(params)
-        execParameters.push('--output-style ' + outputStyle)
-
-        # --indent-type
-        if typeof params.indentType is 'string' and params.indentType.toLowerCase() in ['space', 'tab']
-            execParameters.push('--indent-type ' + params.indentType.toLowerCase())
-        else
-            execParameters.push('--indent-type ' + @options.indentType.toLowerCase())
-
-        # --indent-width
-        if params.indentWidth isnt null
-            execParameters.push('--indent-width ' + params.indentWidth)
-        else
-            execParameters.push('--indent-width ' + @options.indentWidth)
-
-        # --linefeed
-        if typeof params.linefeed is 'string' and params.linefeed.toLowerCase() in ['cr', 'crlf', 'lf', 'lfcr']
-            execParameters.push('--linefeed ' + params.linefeed.toLowerCase())
-        else
-            execParameters.push('--linefeed ' + @options.linefeed)
-
-        # --source-comments
-        if params.sourceComments or (params.sourceComments is null and @options.sourceComments)
-            execParameters.push('--source-comments')
-
-        # --source-map
-        if (params.sourceMap isnt null and !!params.sourceMap) or (params.sourceMap is null and @options.sourceMap)
-            if params.sourceMap or (params.sourceMap is null and @options.sourceMap)
-                sourceMapFilename = params.cssFilename + '.map'
-            else
-                sourceMapFilename = path.resolve(path.dirname(params.file), params.sourceMap)
-            execParameters.push('--source-map "' + sourceMapFilename + '"')
-
-        # --source-map-embed
-        if params.sourceMapEmbed or (params.sourceMapEmbed is null and @options.sourceMapEmbed)
-            execParameters.push('--source-map-embed')
-
-        # --source-map-contents
-        if params.sourceMapContents or (params.sourceMapContents is null and @options.sourceMapContents)
-            execParameters.push('--source-map-contents')
-
-        # --include-path
-        includePath = null
-        if !!params.includePath
-            includePath = params.includePath
-        else if !!@options.includePath
-            includePath = @options.includePath
-
-        if includePath
-            if not path.isAbsolute(includePath)
-                includePath = path.join(workingDirectory , includePath)
-
-            execParameters.push('--include-path "' + path.resolve(includePath) + '"')
-
-        # --precision
-        if params.precision isnt null
-            execParameters.push('--precision ' + params.precision)
-        else
-            execParameters.push('--precision ' + @options.precision)
-
-        # --importer
-        importerFilename = false
-        if typeof params.importer is 'string' and params.importer.length > 0
-            importerFilename = params.importer
-        else if @options.importer.length > 0
-            importerFilename = @options.importer
-
-        if importerFilename
-            if not path.isAbsolute(importerFilename)
-                importerFilename = path.join(workingDirectory , importerFilename)
-            execParameters.push('--importer "' + path.resolve(importerFilename) + '"')
-
-        # --functions
-        functionsFilename = false
-        if typeof params.functions is 'string' and params.functions.length > 0
-            functionsFilename = params.functions
-        else if @options.functions.length > 0
-            functionsFilename = @options.functions
-
-        if functionsFilename
-            if not path.isAbsolute(functionsFilename)
-                functionsFilename = path.join(workingDirectory , functionsFilename)
-            execParameters.push('--functions "' + path.resolve(functionsFilename) + '"')
-
-        # CSS target and output file
-        execParameters.push('"' + params.file + '"')
-        execParameters.push('"' + params.cssFilename + '"')
-
-        return execParameters
-
-
-    getOutputStyle: (params) ->
-        # If user has defined "compress" paramter as inline parameter, we use this value, but
-        # it's only a fallback. Users should use outputStyle now!
-        if params.compress
-            params.outputStyle = 'compressed'
-
-        if typeof params.outputStyle is 'string' and params.outputStyle.toLowerCase() in ['nested', 'compact', 'expanded', 'compressed']
-            outputStyle = params.outputStyle.toLowerCase()
-        else
-            outputStyle = @options.outputStyle.toLowerCase()
-
-        return outputStyle
-
-
-    showInfoNotification: (title, message, forceShow = false) ->
-        if !@options.showInfoNotification and !forceShow
-            return
-
-        atom.notifications.addInfo title,
-            detail: message
-            dismissable: !@options.autoHideInfoNotification
-
-
-    showSuccessNotification: (title, message, forceShow = false) ->
-        if !@options.showSuccessNotification and !forceShow
-            return
-
-        atom.notifications.addSuccess title,
-            detail: message
-            dismissable: !@options.autoHideSuccessNotification
-
-
-    showErrorNotification: (title, message, forceShow = false) ->
-        if !@options.showErrorNotification and !forceShow
-            return
-
-        atom.notifications.addError title,
-            detail: message
-            dismissable: !@options.autoHideErrorNotification
-
-
-    startCompiling: (filename) ->
-        @inProgress = true
+    startCompilation: (args) ->
+        @hasError = false
+        @nodeSassOutput = undefined
 
         if @options.showStartCompilingNotification
-            @showInfoNotification 'Start compiling:', filename
+            if args.isCompileDirect
+                @showInfoNotification('Start direct compilation')
+            else
+                @showInfoNotification('Start compilation', args.inputFilename)
+
+        if @options.showPanel
+            @showPanel(true)
+            if @options.showStartCompilingNotification
+                if args.isCompileDirect
+                    @addText('Start direct compilation', 'terminal', 'info',)
+                else
+                    @addText(args.inputFilename, 'terminal', 'info', (evt) => @openFile(args.inputFilename, null, null, evt.target) )
+
+
+    warning: (args) ->
+        if @options.showWarningNotification
+            @showWarningNotification('Warning', args.message)
 
         if @options.showPanel
             @showPanel()
-            @setPanelCaption 'SASS AutoCompile: Compiling...'
-            if @options.showStartCompilingNotification
-                @setPanelMessage filename, 'terminal'
-
-
-    endCompiling: (wasSuccessful, message, outputStyle) ->
-        if wasSuccessful
-            notificationMessage = message + (if outputStyle then ' (' + outputStyle + ')' else '')
-            @showSuccessNotification 'Successfully compiled to:', notificationMessage
-
-            if @options.showPanel
-                @setPanelCaption 'SASS AutoCompile: Successfully compiled'
-                @setSuccessMessageToPanel message, outputStyle
-                @showCloseButton()
-                if @options.autoHidePanelOnSuccess
-                    @hidePanel true
-        else
-            if typeof message == 'object'
-                errorNotification = "FILE:\n" + message.file + "\n \nERROR:\n" + message.message + "\n \nLINE:    " + message.line + "\nCOLUMN:  " + message.column
+            if args.outputFilename
+                @addText(args.message, '', 'warning', (evt) => @openFile(args.outputFilename, evt.target))
             else
-                errorNotification = message
-            @showErrorNotification 'Error while compiling:', errorNotification
+                @addText(args.message, '', 'warning')
 
-            if @options.showPanel
-                @setPanelCaption 'SASS AutoCompile: Error while compiling'
-                @setErrorMessageToPanel message
-                @showCloseButton()
-                if @options.autoHidePanelOnError
-                    @hidePanel true
+
+    successfullCompilation: (args) ->
+        @appendNodeSassOutput(args.nodeSassOutput)
+        fileSize = file.fileSizeToReadable(args.statistics.after)
+
+        # Notification
+        caption = "Successfully compiled"
+        details = args.outputFilename
+        if @options.showAdditionalCompilationInfo
+            details += "\n \nOutput style: " + args.outputStyle
+            details += "\nDuration:     " + args.statistics.duration + " ms"
+            details += "\nFile size:    " + fileSize.size + " " + fileSize.unit
+        @showSuccessNotification(caption, details)
+
+        # Panel
+        if @options.showPanel
+            @showPanel()
+
+            # We have to store this value in a local variable, beacuse $$ methods can not see @options
+            showAdditionalCompilationInfo = @options.showAdditionalCompilationInfo
+
+            message = $$ ->
+                @div class: 'success-text-wrapper', =>
+                    @p class: 'icon icon-check text-success', =>
+                        if args.isCompileDirect
+                            @span class: '', 'Successfully compiled!'
+                        else
+                            @span class: '', args.outputFilename
+
+                    if showAdditionalCompilationInfo
+                        @p class: 'success-details text-info', =>
+                            @span class: 'success-output-style', =>
+                                @span 'Output style: '
+                                @span class: 'value', args.outputStyle
+                            @span class: 'success-duration', =>
+                                @span 'Duration: '
+                                @span class: 'value', args.statistics.duration + ' ms'
+                            @span class: 'success-file-size', =>
+                                @span 'File size: '
+                                @span class: 'value', fileSize.size + ' ' + fileSize.unit
+
+            @addText(message, 'check', 'success', (evt) => @openFile(args.outputFilename, evt.target))
+
+
+    erroneousCompilation: (args) ->
+        @hasError = true
+        @appendNodeSassOutput(args.nodeSassOutput)
+
+        # Notification
+        caption = 'Compilation error'
+        if args.error.file
+            errorNotification = "ERROR:\n" + args.error.message
+            if args.isCompileToFile
+                errorNotification += "\n \nFILE:\n" + args.error.file
+            errorNotification += "\n \nLINE:    " + args.error.line + "\nCOLUMN:  " + args.error.column
+        else
+            errorNotification = args.error
+        @showErrorNotification(caption, errorNotification)
+
+        # Panel
+        if @options.showPanel
+            @showPanel()
+
+            if args.error.file
+                errorMessage = $$ ->
+                    @div class: 'open-error-file', =>
+                        @p class: "icon icon-alert text-error", =>
+                            @span class: "error-caption", 'Error:'
+                            @span class: "error-text", args.error.message
+                            if args.isCompileDirect
+                                @span class: 'error-line', args.error.line
+                                @span class: 'error-column', args.error.column
+
+                        if args.isCompileToFile
+                            @p class: 'error-details text-error', =>
+                                @span class: 'error-file-wrapper', =>
+                                    @span 'in:'
+                                    @span class: 'error-file', args.error.file
+                                    @span class: 'error-line', args.error.line
+                                    @span class: 'error-column', args.error.column
+                @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.inputFilename, args.error.line, args.error.column, evt.target))
+            else
+                @addText(args.error.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
+
+        if @options.directlyJumpToError and args.error.file
+            @openFile(args.error.file, args.error.line, args.error.column)
+
+
+    appendNodeSassOutput: (output) ->
+        if @nodeSassOutput
+            @nodeSassOutput += "\n\n--------------------\n\n" + output
+        else
+            @nodeSassOutput = output
+
+
+    finished: (args) ->
+        if @hasError
+            @setCaption('Compilation error')
+            if @options.autoHidePanelOnError
+                @hidePanel(true)
+        else
+            @setCaption('Successfully compiled')
+            if @options.autoHidePanelOnSuccess
+                @hidePanel(true)
+
+        @hideThrobber()
+        @showRightTopOptions()
 
         if @nodeSassOutput
             @panelOpenNodeSassOutput.removeClass('hide')
         if @options.showNodeSassOutput
             @openNodeSassOutput()
 
-        @inProgress = false
+
+    openFile: (filename, line, column, targetElement = null) ->
+        fs.exists filename, (exists) =>
+            if exists
+                atom.workspace.open filename,
+                    initialLine: if line then line - 1 else 0,
+                    initialColumn: if column then column - 1 else 0
+            else if targetElement
+                target = $(targetElement)
+                if not target.is('p.clickable')
+                    target = target.parent()
+
+                target
+                    .addClass('target-file-does-not-exist')
+                    .removeClass('clickable')
+                    .append($('<span>File does not exist!</span>').addClass('hint'))
+                    .off('click')
+                    .children(':first')
+                        .removeClass('text-success text-warning text-info')
 
 
-    setPanelCaption: (caption) ->
-        @panelHeaderCaption.html caption
-
-
-    setPanelMessage: (message, icon = "chevron-right") ->
-        icon = if icon then 'icon-' + icon else ''
-        @panelBody.removeClass('hide').append $$ ->
-            @p =>
-                @span class: "icon #{icon} text-info", message
-
-
-    setSuccessMessageToPanel: (filename, outputStyle) ->
-        @panelBody.removeClass('hide').append $$ ->
-            @p class: 'open-css-file', =>
-                @span class: "icon icon-check text-success", filename
-                @span class: "outputStyle",  (if outputStyle then ' (' + outputStyle + ')' else '')
-
-        @find('.open-css-file').on 'click', (event) =>
-            @openFile filename
-
-
-    setErrorMessageToPanel: (error) ->
-        if typeof error == 'object'
-            @panelBody.removeClass('hide').append $$ ->
-                @div class: 'open-error-file', =>
-                    @p class: "icon icon-alert text-error", =>
-                        @span class: "error-caption", 'Error:'
-                        @span class: "error-text", error.message
-                    @p class: 'error-details', =>
-                        @span class: 'error-file', error.file
-                        @span class: 'error-line', error.line
-                        @span class: 'error-column', error.column
-
-            @find('.open-error-file').on 'click', (event) =>
-                @openFile error.file, error.line, error.column
-        else
-            @panelBody.removeClass('hide').append $$ ->
-                @p class: "icon icon-alert text-error", =>
-                    @span class: "error-caption", 'Error:'
-                    @span class: "error-text", error
-
-
-    openFile: (filename, line, column) ->
-        atom.workspace.open filename,
-            initialLine: if line then line - 1 else 0,
-            initialColumn: if column then column - 1 else 0
-
-
-    showPanel: ->
-        @inProgress = true
-
-        clearTimeout(@timeout)
-
-        @panelHeading.addClass('no-border')
-        @panelBody.addClass('hide').empty()
-        @panelLoading.removeClass('hide')
-        @panelOpenNodeSassOutput.addClass('hide')
-        @panelClose.addClass('hide')
-
-        if @panel
-            @panel.destroy()
-
-        @panel = atom.workspace.addBottomPanel
-            item: this
-
-        @removeClass 'hide'
-
-
-    hidePanel: (withDelay = false) ->
-        @panelLoading.addClass('hide')
-        @panelOpenNodeSassOutput.addClass('hide')
-
-        clearTimeout @timeout
-
-        if withDelay == true
-            @timeout = setTimeout =>
-                @addClass 'hide'
-            , @options.autoHidePanelDelay
-        else
-            @addClass 'hide'
-
-
-    showCloseButton: ->
-        @panelLoading.addClass('hide')
-        @panelClose.removeClass('hide')
-
-
-    openNodeSassOutput: ->
+    openNodeSassOutput: () ->
         if @nodeSassOutput
             if not @nodeSassOutputEditor
                 atom.workspace.open().then (editor) =>
@@ -521,3 +235,111 @@ class SassAutocompileView extends View
             else
                 pane = atom.workspace.paneForItem(@nodeSassOutputEditor)
                 pane.activateItem(@nodeSassOutputEditor)
+
+
+    showInfoNotification: (title, message) ->
+        if @options.showInfoNotification
+            atom.notifications.addInfo title,
+                detail: message
+                dismissable: !@options.autoHideInfoNotification
+
+
+    showSuccessNotification: (title, message) ->
+        if @options.showSuccessNotification
+            atom.notifications.addSuccess title,
+                detail: message
+                dismissable: !@options.autoHideSuccessNotification
+
+
+    showWarningNotification: (title, message) ->
+        if @options.showWarningNotification
+            atom.notifications.addWarning title,
+                detail: message
+                dismissable: !@options.autoWarningInfoNotification
+
+
+    showErrorNotification: (title, message) ->
+        if @options.showErrorNotification
+            atom.notifications.addError title,
+                detail: message
+                dismissable: !@options.autoHideErrorNotification
+
+
+    resetPanel: ->
+        @setCaption('Processing...')
+        @showThrobber()
+        @hideRightTopOptions()
+        @panelOpenNodeSassOutput.addClass('hide')
+        @panelBody.addClass('hide').empty()
+
+
+    showPanel: (reset = false) ->
+        clearTimeout(@automaticHidePanelTimeout)
+
+        if reset
+            @resetPanel()
+
+        @panel.show()
+
+
+    hidePanel: (withDelay = false, reset = false)->
+        clearTimeout(@automaticHidePanelTimeout)
+
+        # We have to compare it to true because if close button is clicked, the withDelay
+        # parameter is a reference to the button
+        if withDelay == true
+            @automaticHidePanelTimeout = setTimeout =>
+                @hideThrobber()
+                @panel.hide()
+                if reset
+                    @resetPanel()
+            , @options.autoHidePanelDelay
+        else
+            @hideThrobber()
+            @panel.hide()
+            if reset
+                @resetPanel()
+
+
+    setCaption: (text) ->
+        @panelHeaderCaption.html(SassAutocompileView.captionPrefix + text)
+
+
+    addText: (text, icon, textClass, clickCallback) ->
+        clickCounter = SassAutocompileView.clickableLinksCounter++
+        wrapperClass = if clickCallback then "clickable clickable-#{clickCounter}" else ''
+
+        spanClass = ''
+        if icon
+            spanClass = spanClass + (if spanClass isnt '' then ' ' else '') + "icon icon-#{icon}"
+        if textClass
+            spanClass = spanClass + (if spanClass isnt '' then ' ' else '') + "text-#{textClass}"
+
+        if typeof text is 'object'
+            wrapper = $$ ->
+                @div class: wrapperClass
+            wrapper.append(text)
+            @panelBody.removeClass('hide').append(wrapper)
+        else
+            @panelBody.removeClass('hide').append $$ ->
+                @p class: wrapperClass, =>
+                    @span class: spanClass, text
+
+        if clickCallback
+            @find(".clickable-#{clickCounter}").on 'click', (evt) => clickCallback(evt)
+
+
+    hideRightTopOptions: ->
+        @panelRightTopOptions.addClass('hide')
+
+
+    showRightTopOptions: ->
+        @panelRightTopOptions.removeClass('hide')
+
+
+    hideThrobber: ->
+        @panelLoading.addClass('hide')
+
+
+    showThrobber: ->
+        @panelLoading.removeClass('hide')

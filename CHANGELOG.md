@@ -1,3 +1,22 @@
+**0.10.0 - 22.09.2015**
+- Completely rewritten package
+- Compile to file and direct compilation possible
+- Compiling files with and without first line comment
+- Separate compilations of compressed, comptact, nested and expanded output styles in one step
+- Compilation stops on first error
+- Improved parameter detection
+- Warning for not using old parameters any more
+- Improved panel usability
+- Improved main menu
+- Added item "Compile SASS" to Tree View context menu
+- New shortcuts for file and direct compilation
+- New option: Compile files ...
+- New option: Directly jump to error
+- New option: Show 'Compile SASS' item in Tree View context menu
+- New options: Compile one SASS file to different output styles with different file names
+- New option: Show additional compilation info
+- New option: Show warning when using old paramters
+
 **0.9.0 - 31.08.2015**
 - New option: Indent type / as inline parameter: indentType
 - New option: Indent width / as inline parameter: indentWidth

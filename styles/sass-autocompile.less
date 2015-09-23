@@ -5,13 +5,27 @@
 @import "ui-variables";
 
 .sass-autocompile {
-    .open-css-file,
-    .open-error-file {
-        cursor: pointer;
-    }
-
     .loading-spinner-tiny {
         margin-left: 10px;
+    }
+
+    .right-top-options {
+        .btn-close {
+            height: 100%;
+        }
+    }
+
+    .clickable {
+        cursor: pointer;
+
+        &:hover {
+            & when (lightness(@inset-panel-background-color) >= 50%) {
+                background-color: darken(@inset-panel-background-color, 3%);
+            }
+            & when (lightness(@inset-panel-background-color) < 50%) {
+                background-color: lighten(@inset-panel-background-color, 3%);
+            }
+        }
     }
 
     .open-node-sass-output {
@@ -33,20 +47,43 @@
     }
 
     .panel-body {
-        padding: 15px 10px;
+        padding: 10px 0;
 
-        p,
-        .open-error-file {
-            margin: 8px 0 0 0;
+        p {
+            margin: 0;
+            padding: 4px 10px;
+        }
 
-            &:first-child {
-                margin-top: 0;
+        // .outputStyle {
+        //     color: #999;
+        //     padding: 0 0 0 5px;
+        // }
+
+        .success-text-wrapper {
+
+            .success-details {
+                color: #888;
+
+                .success-output-style {
+                    padding: 0 0 0 21px;
+                }
+
+                .success-duration {
+                    padding: 0 0 0 12px;
+                }
+
+                .success-file-size {
+                    padding: 0 0 0 12px;
+                }
+
+                .value {
+                    font-weight: bold;
+                }
             }
         }
 
-        .outputStyle {
-            color: #999;
-            padding: 0 0 0 5px;
+        .text-warning {
+            padding-left: 21px;            
         }
 
         .error-caption {
@@ -56,16 +93,15 @@
             padding: 0 0 0 7px;
         }
 
-        .error-details {
-            margin-top: 8px;
+        .error-file-wrapper {
+            padding-left: 21px;
         }
 
         .error-file {
-            padding: 0 0 0 21px;
+            padding: 0 7px;
         }
 
         .error-line {
-            padding: 0 0 0 7px;
 
             &::before {
                 content: '(';

@@ -9,13 +9,19 @@
 # https://atom.io/docs/latest/advanced/keymaps
 
 '.platform-darwin atom-workspace atom-text-editor:not(.mini)':
-  'ctrl-cmd-shift-s': 'sass-autocompile:toggle-enabled'
-  'ctrl-cmd-shift-h': 'sass-autocompile:close-message-panel'
+    'ctrl-shift-c': 'sass-autocompile:compile-to-file'
+    'cmd-shift-c': 'sass-autocompile:compile-direct'
+    'ctrl-cmd-shift-s': 'sass-autocompile:toggle-compile-on-save'
+    'ctrl-cmd-shift-h': 'sass-autocompile:close-message-panel'
 
 '.platform-linux atom-workspace atom-text-editor:not(.mini)':
-  'ctrl-alt-shift-s': 'sass-autocompile:toggle-enabled'
-  'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
+    'ctrl-shift-c': 'sass-autocompile:compile-to-file'
+    'alt-shift-c': 'sass-autocompile:compile-direct'
+    'ctrl-alt-shift-s': 'sass-autocompile:toggle-compile-on-save'
+    'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
 
 '.platform-win32 atom-workspace atom-text-editor:not(.mini)':
-  'ctrl-alt-shift-s': 'sass-autocompile:toggle-enabled'
-  'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
+    'ctrl-shift-c': 'sass-autocompile:compile-to-file'
+    'alt-shift-c': 'sass-autocompile:compile-direct'
+    'ctrl-alt-shift-s': 'sass-autocompile:toggle-compile-on-save'
+    'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
