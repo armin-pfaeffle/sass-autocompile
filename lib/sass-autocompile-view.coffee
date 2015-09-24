@@ -60,7 +60,7 @@ class SassAutocompileView extends View
 
     startCompilation: (args) ->
         @hasError = false
-        @nodeSassOutput = undefined
+        @clearNodeSassOutput()
 
         if @options.showStartCompilingNotification
             if args.isCompileDirect
@@ -169,8 +169,10 @@ class SassAutocompileView extends View
                                     @span class: 'error-line', args.error.line
                                     @span class: 'error-column', args.error.column
                 @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.inputFilename, args.error.line, args.error.column, evt.target))
-            else
+            else if args.error.message
                 @addText(args.error.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
+            else
+                @addText(args.error, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
 
         if @options.directlyJumpToError and args.error.file
             @openFile(args.error.file, args.error.line, args.error.column)
@@ -181,6 +183,10 @@ class SassAutocompileView extends View
             @nodeSassOutput += "\n\n--------------------\n\n" + output
         else
             @nodeSassOutput = output
+
+
+    clearNodeSassOutput: () ->
+        @nodeSassOutput = undefined
 
 
     finished: (args) ->
@@ -203,23 +209,24 @@ class SassAutocompileView extends View
 
 
     openFile: (filename, line, column, targetElement = null) ->
-        fs.exists filename, (exists) =>
-            if exists
-                atom.workspace.open filename,
-                    initialLine: if line then line - 1 else 0,
-                    initialColumn: if column then column - 1 else 0
-            else if targetElement
-                target = $(targetElement)
-                if not target.is('p.clickable')
-                    target = target.parent()
+        if typeof filename is 'string'
+            fs.exists filename, (exists) =>
+                if exists
+                    atom.workspace.open filename,
+                        initialLine: if line then line - 1 else 0,
+                        initialColumn: if column then column - 1 else 0
+                else if targetElement
+                    target = $(targetElement)
+                    if not target.is('p.clickable')
+                        target = target.parent()
 
-                target
-                    .addClass('target-file-does-not-exist')
-                    .removeClass('clickable')
-                    .append($('<span>File does not exist!</span>').addClass('hint'))
-                    .off('click')
-                    .children(':first')
-                        .removeClass('text-success text-warning text-info')
+                    target
+                        .addClass('target-file-does-not-exist')
+                        .removeClass('clickable')
+                        .append($('<span>File does not exist!</span>').addClass('hint'))
+                        .off('click')
+                        .children(':first')
+                            .removeClass('text-success text-warning text-info')
 
 
     openNodeSassOutput: () ->

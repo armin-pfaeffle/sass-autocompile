@@ -442,6 +442,15 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.10.2 - 24.09.2015**
+- Improved and fixed direction compilation; now supporting SCSS and SASS
+- Bugfix: Multiple parallel compilations were possible
+- Bugfix: Wrong varialbe referencing
+- Bugfix: "main" inline parameter was not handled correctly
+- Bugfix: Fixed showing error
+- Bugfix: Spaces between key and colon in inline paramters lead to an unhandled error
+- Bugfix: Error in delete method leads to non-deleted files
+
 **0.10.1 - 23.09.2015**
 - Bugfix: "Cannot find module './File'"
 

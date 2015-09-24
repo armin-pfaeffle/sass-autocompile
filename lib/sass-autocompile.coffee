@@ -273,6 +273,7 @@ module.exports =
     activate: (state) ->
         @subscriptions = new CompositeDisposable
         @sassAutocompileView = new SassAutocompileView(new SassAutocompileOptions(), state.sassAutocompileViewState)
+        @isProcessing = false
 
 
         # Deprecated option -- Remove in later version!!!
@@ -406,6 +407,7 @@ module.exports =
 
     compile: (mode, filename = null) ->
         options = new SassAutocompileOptions()
+        @isProcessing = true
 
         @sassAutocompileView.updateOptions(options)
         @sassAutocompileView.hidePanel(false, true)
@@ -422,17 +424,15 @@ module.exports =
 
         compiler.onError (args) =>
             @sassAutocompileView.erroneousCompilation(args)
-            isProcessing = false
 
         compiler.onFinished (args) =>
             @sassAutocompileView.finished(args)
-            isProcessing = false
+            @isProcessing = false
 
         compiler.compile(mode, filename)
 
 
     registerTextEditorSaveCallback: () ->
-        @isProcessing = false
         atom.workspace.observeTextEditors (editor) =>
             @subscriptions.add editor.onDidSave =>
                 if SassAutocompileOptions.get('compileOnSave') and !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())

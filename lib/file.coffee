@@ -8,10 +8,10 @@ class File
     @delete: (files) ->
         # if file is a single filename then we wrap it into an array and in
         # next step we delete an array of file
-        if typeof file is 'string'
+        if typeof files is 'string'
             files = [files]
 
-        if typeof file is 'object'
+        if typeof files is 'object'
             for file in files
                 if fs.existsSync(file)
                     try

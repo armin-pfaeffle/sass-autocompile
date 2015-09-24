@@ -25,18 +25,41 @@ class NodeSassCompiler
         @mode = mode
         @setupInputFile(filename)
 
-        # If no inputFile.path is given, then we cannot compile the file or content
-        if @inputFile.path
-            if @isCompileToFile() and not @ensureFileIsSaved()
-                    return
+        # If no inputFile.path is given, then we cannot compile the file or content, because something
+        # is wrong
+        if not @inputFile.path
+            @throwErrorAndFinish('Invalid file: ' + @inputFile.path)
 
-            @emitter.emit('start', @getBasicEmitterParameters())
+        # Check file existance
+        else if not fs.existsSync(@inputFile.path)
+            @throwErrorAndFinish('File does not exist: ' + @inputFile.path)
 
-            @updateOptionsWithInlineParameters () =>
-                @outputStyles = @getOutputStylesToCompileTo()
+        else
+            # Parse inline parameters
+            parameters = new SassAutocompileInlineParameters()
+            parameters.parse @inputFile.path, (params, error) =>
+                if error
+                    @throwErrorAndFinish(error)
 
-                # Start recursive compilation
-                @doCompile()
+                # In case there is a "main" inline paramter, params is a string and contains the
+                # target filename.
+                # It's important to check that inputFile.path is not params because of infinite loop
+                else if typeof params is 'string' and params isnt @inputFile.path
+                    if @inputFile.isTemporary
+                        @throwErrorAndFinish('\'main\' inline parameter is not supported in direct compilation.')
+                    else
+                        @compile(@mode, params)
+                else
+                    if @isCompileToFile() and not @ensureFileIsSaved()
+                        return
+
+                    @emitter.emit('start', @getBasicEmitterParameters())
+
+                    @updateOptionsWithInlineParameters(params)
+                    @outputStyles = @getOutputStylesToCompileTo()
+
+                    # Start recursive compilation
+                    @doCompile()
 
 
     setupInputFile: (filename = null) ->
@@ -50,13 +73,27 @@ class NodeSassCompiler
             return unless activeEditor
 
             if @isCompileDirect()
-                @inputFile.path = file.getTemporaryFilename('sass-autocompile.input.', null, 'sass')
-                @inputFile.isTemporary = true
-                fs.writeFileSync(@inputFile.path, activeEditor.getText())
+                syntax = @askForInputSyntax()
+                if syntax
+                    @inputFile.path = file.getTemporaryFilename('sass-autocompile.input.', null, syntax)
+                    @inputFile.isTemporary = true
+                    fs.writeFileSync(@inputFile.path, activeEditor.getText())
+                else
+                    @inputFile.path = undefined
             else
                 @inputFile.path = activeEditor.getURI()
                 if not @inputFile.path
                     @inputFile.path = @askForSavingUnsavedFileInActiveEditor()
+
+    askForInputSyntax: () ->
+        dialogResultButton = atom.confirm
+            message: "Is the syntax if your inout SASS or SCSS?"
+            buttons: ['SASS', 'SCSS', 'Cancel']
+        switch dialogResultButton
+            when 0 then syntax = 'sass'
+            when 1 then syntax = 'scss'
+            else syntax = undefined
+        return syntax
 
 
     askForSavingUnsavedFileInActiveEditor: () ->
@@ -120,149 +157,139 @@ class NodeSassCompiler
     #   precision
     #   importer
     #   functions
-    updateOptionsWithInlineParameters: (callback) ->
-        parameters = new SassAutocompileInlineParameters()
-        parameters.parse @inputFile.path, (params, error) =>
-            if error
-                emitterParameters = @getBasicEmitterParameters({ error: error })
-                @emitter.emit('error', emitterParameters)
-                return
+    updateOptionsWithInlineParameters: (params) ->
+        # BACKWARD COMPATIBILITY: params.out and param.outputStyle
+        # Should we let this code here, so we can decide to output only one single file with one output style per SASS file?
+        if typeof params.out is 'string' or typeof params.outputStyle is 'string' or typeof params.compress is 'boolean'
 
-            if params
-                # BACKWARD COMPATIBILITY: params.out and param.outputStyle
-                # Should we let this code here, so we can decide to output only one single file with one output style per SASS file?
-                if typeof params.out is 'string' or typeof params.outputStyle is 'string' or typeof params.compress is 'boolean'
+            if @options.showOldParametersWarning
+                emitterParameters = @getBasicEmitterParameters({ message: 'Please don\'t use \'out\', \'outputStyle\' or \'compress\' parameter any more. Have a look at the documentation for newer parameters' })
+                @emitter.emit('warning', emitterParameters)
 
-                    if @options.showOldParametersWarning
-                        emitterParameters = @getBasicEmitterParameters({ message: 'Please don\'t use \'out\', \'outputStyle\' or \'compress\' parameter any more. Have a look at the documentation for newer parameters' })
-                        @emitter.emit('warning', emitterParameters)
+            # Set default output style
+            outputStyle = 'compressed'
 
-                    # Set default output style
-                    outputStyle = 'compressed'
+            # If "compress" is set, apply this value
+            if params.compress is false
+                outputStyle = 'nested'
+            if params.compress is true
+                outputStyle = 'compressed'
 
-                    # If "compress" is set, apply this value
-                    if params.compress is false
-                        outputStyle = 'nested'
-                    if params.compress is true
-                        outputStyle = 'compressed'
+            if params.outputStyle
+                outputStyle = if typeof params.outputStyle is 'string' then params.outputStyle.toLowerCase() else 'compressed'
 
-                    if params.outputStyle
-                        outputStyle = if typeof params.outputStyle is 'string' then params.outputStyle.toLowerCase() else 'compressed'
+            @options.compileCompressed = (outputStyle is 'compressed')
+            if outputStyle is 'compressed' and typeof params.out is 'string' and params.out.length > 0
+                @options.compressedFilenamePattern = params.out
 
-                    @options.compileCompressed = (outputStyle is 'compressed')
-                    if outputStyle is 'compressed' and typeof params.out is 'string' and params.out.length > 0
-                        @options.compressedFilenamePattern = params.out
+            @options.compileCompact = (outputStyle is 'compact')
+            if outputStyle is 'compact' and typeof params.out is 'string' and params.out.length > 0
+                @options.compactFilenamePattern = params.out
 
-                    @options.compileCompact = (outputStyle is 'compact')
-                    if outputStyle is 'compact' and typeof params.out is 'string' and params.out.length > 0
-                        @options.compactFilenamePattern = params.out
+            @options.compileNested = (outputStyle is 'nested')
+            if outputStyle is 'nested' and typeof params.out is 'string' and params.out.length > 0
+                @options.nestedFilenamePattern = params.out
 
-                    @options.compileNested = (outputStyle is 'nested')
-                    if outputStyle is 'nested' and typeof params.out is 'string' and params.out.length > 0
-                        @options.nestedFilenamePattern = params.out
-
-                    @options.compileExpanded = (outputStyle is 'expanded')
-                    if outputStyle is 'expanded' and typeof params.out is 'string' and params.out.length > 0
-                        @options.expandedFilenamePattern = params.out
+            @options.compileExpanded = (outputStyle is 'expanded')
+            if outputStyle is 'expanded' and typeof params.out is 'string' and params.out.length > 0
+                @options.expandedFilenamePattern = params.out
 
 
-                # If user specifies a single or multiple output styles, we reset the default settings
-                # so only the given output styles are compiled to
-                if params.compileCompressed or params.compileCompact or params.compileNested or params.compileExpanded
-                    @options.compileCompressed = false
-                    @options.compileCompact = false
-                    @options.compileNested = false
-                    @options.compileExpanded = false
+        # If user specifies a single or multiple output styles, we reset the default settings
+        # so only the given output styles are compiled to
+        if params.compileCompressed or params.compileCompact or params.compileNested or params.compileExpanded
+            @options.compileCompressed = false
+            @options.compileCompact = false
+            @options.compileNested = false
+            @options.compileExpanded = false
 
-                # compileCompressed
-                if params.compileCompressed is true or params.compileCompressed is false
-                    @options.compileCompressed = params.compileCompressed
-                else if typeof params.compileCompressed is 'string'
-                    @options.compileCompressed = true
-                    @options.compressedFilenamePattern = params.compileCompressed
+        # compileCompressed
+        if params.compileCompressed is true or params.compileCompressed is false
+            @options.compileCompressed = params.compileCompressed
+        else if typeof params.compileCompressed is 'string'
+            @options.compileCompressed = true
+            @options.compressedFilenamePattern = params.compileCompressed
 
-                # compressedFilenamePattern
-                if typeof params.compressedFilenamePattern is 'string' and params.compressedFilenamePattern.length > 1
-                    @options.compressedFilenamePattern = params.compressedFilenamePattern
+        # compressedFilenamePattern
+        if typeof params.compressedFilenamePattern is 'string' and params.compressedFilenamePattern.length > 1
+            @options.compressedFilenamePattern = params.compressedFilenamePattern
 
-                # compileCompact
-                if params.compileCompact is true or params.compileCompact is false
-                    @options.compileCompact = params.compileCompact
-                else if typeof params.compileCompact is 'string'
-                    @options.compileCompact = true
-                    @options.compactFilenamePattern = params.compileCompact
+        # compileCompact
+        if params.compileCompact is true or params.compileCompact is false
+            @options.compileCompact = params.compileCompact
+        else if typeof params.compileCompact is 'string'
+            @options.compileCompact = true
+            @options.compactFilenamePattern = params.compileCompact
 
-                # compactFilenamePattern
-                if typeof params.compactFilenamePattern is 'string' and params.compactFilenamePattern.length > 1
-                    @options.compactFilenamePattern = params.compactFilenamePattern
+        # compactFilenamePattern
+        if typeof params.compactFilenamePattern is 'string' and params.compactFilenamePattern.length > 1
+            @options.compactFilenamePattern = params.compactFilenamePattern
 
-                # compileNested
-                if params.compileNested is true or params.compileNested is false
-                    @options.compileNested = params.compileNested
-                else if typeof params.compileNested is 'string'
-                    @options.compileNested = true
-                    @options.nestedFilenamePattern = params.compileNested
+        # compileNested
+        if params.compileNested is true or params.compileNested is false
+            @options.compileNested = params.compileNested
+        else if typeof params.compileNested is 'string'
+            @options.compileNested = true
+            @options.nestedFilenamePattern = params.compileNested
 
-                # nestedFilenamePattern
-                if typeof params.nestedFilenamePattern is 'string' and params.nestedFilenamePattern.length > 1
-                    @options.nestedFilenamePattern = params.nestedFilenamePattern
+        # nestedFilenamePattern
+        if typeof params.nestedFilenamePattern is 'string' and params.nestedFilenamePattern.length > 1
+            @options.nestedFilenamePattern = params.nestedFilenamePattern
 
-                # compileExpanded
-                if params.compileExpanded is true or params.compileExpanded is false
-                    @options.compileExpanded = params.compileExpanded
-                else if typeof params.compileExpanded is 'string'
-                    @options.compileExpanded = true
-                    @options.expandedFilenamePattern = params.compileExpanded
+        # compileExpanded
+        if params.compileExpanded is true or params.compileExpanded is false
+            @options.compileExpanded = params.compileExpanded
+        else if typeof params.compileExpanded is 'string'
+            @options.compileExpanded = true
+            @options.expandedFilenamePattern = params.compileExpanded
 
-                # expandedFilenamePattern
-                if typeof params.expandedFilenamePattern is 'string' and params.expandedFilenamePattern.length > 1
-                    @options.expandedFilenamePattern = params.expandedFilenamePattern
+        # expandedFilenamePattern
+        if typeof params.expandedFilenamePattern is 'string' and params.expandedFilenamePattern.length > 1
+            @options.expandedFilenamePattern = params.expandedFilenamePattern
 
-                # indentType
-                if typeof params.indentType is 'string'  and params.indentType.toLowerCase() in ['space', 'tab']
-                    @options.indentType = params.indentType.toLowerCase()
+        # indentType
+        if typeof params.indentType is 'string'  and params.indentType.toLowerCase() in ['space', 'tab']
+            @options.indentType = params.indentType.toLowerCase()
 
-                # indentWidth
-                if typeof params.indentWidth is 'number' and params.indentWidth <= 10 and indentWidth >= 0
-                    @options.indentWidth = params.indentWidth
+        # indentWidth
+        if typeof params.indentWidth is 'number' and params.indentWidth <= 10 and indentWidth >= 0
+            @options.indentWidth = params.indentWidth
 
-                # linefeed
-                if typeof params.linefeed is 'string' and params.linefeed.toLowerCase() in ['cr', 'crlf', 'lf', 'lfcr']
-                    @options.linefeed = params.linefeed.toLowerCase()
+        # linefeed
+        if typeof params.linefeed is 'string' and params.linefeed.toLowerCase() in ['cr', 'crlf', 'lf', 'lfcr']
+            @options.linefeed = params.linefeed.toLowerCase()
 
-                # sourceMap
-                if params.sourceMap is true or params.sourceMap is false or (typeof params.sourceMap is 'string' and params.sourceMap.length > 1)
-                    @options.sourceMap = params.sourceMap
+        # sourceMap
+        if params.sourceMap is true or params.sourceMap is false or (typeof params.sourceMap is 'string' and params.sourceMap.length > 1)
+            @options.sourceMap = params.sourceMap
 
-                # sourceMapEmbed
-                if params.sourceMapEmbed is true or params.sourceMapEmbed is false
-                    @options.sourceMapEmbed = params.sourceMapEmbed
+        # sourceMapEmbed
+        if params.sourceMapEmbed is true or params.sourceMapEmbed is false
+            @options.sourceMapEmbed = params.sourceMapEmbed
 
-                # sourceMapContents
-                if params.sourceMapContents is true or params.sourceMapContents is false
-                    @options.sourceMapContents = params.sourceMapContents
+        # sourceMapContents
+        if params.sourceMapContents is true or params.sourceMapContents is false
+            @options.sourceMapContents = params.sourceMapContents
 
-                # sourceComments
-                if params.sourceComments is true or params.sourceComments is false
-                    @options.sourceComments = params.sourceComments
+        # sourceComments
+        if params.sourceComments is true or params.sourceComments is false
+            @options.sourceComments = params.sourceComments
 
-                # includePath
-                if typeof params.includePath is 'string' and params.includePath.length > 1
-                    @options.includePath = params.includePath
+        # includePath
+        if typeof params.includePath is 'string' and params.includePath.length > 1
+            @options.includePath = params.includePath
 
-                # precision
-                if typeof params.precision is 'number' and params.precision >= 0
-                    @options.precision = params.precision
+        # precision
+        if typeof params.precision is 'number' and params.precision >= 0
+            @options.precision = params.precision
 
-                # importer
-                if typeof params.importer is 'string' and params.importer.length > 1
-                    @options.importer = params.importer
+        # importer
+        if typeof params.importer is 'string' and params.importer.length > 1
+            @options.importer = params.importer
 
-                # functions
-                if typeof params.functions is 'string' and params.functions.length > 1
-                    @options.functions = params.functions
-
-            callback()
+        # functions
+        if typeof params.functions is 'string' and params.functions.length > 1
+            @options.functions = params.functions
 
 
     getOutputStylesToCompileTo: () ->
@@ -520,6 +547,18 @@ class NodeSassCompiler
         execParameters.push('"' + outputFile.path + '"')
 
         return execParameters
+
+
+    throwErrorAndFinish: (error) ->
+        if @inputFile and @inputFile.isTemporary
+            console.log('delete: ' + @inputFile.path)
+            file.delete(@inputFile.path)
+        if @outputFile and @outputFile.isTemporary
+            file.delete(@outputFile.path)
+
+        emitterParameters = @getBasicEmitterParameters({ error: error })
+        @emitter.emit('error', emitterParameters)
+        @emitter.emit('finished', @getBasicEmitterParameters())
 
 
     getBasicEmitterParameters: (additionalParameters = {}) ->
