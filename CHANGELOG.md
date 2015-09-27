@@ -1,3 +1,7 @@
+**0.10.3 - 27.09.2015**
+- Bugfix: Option "Compile files only with first-line-comment" did not work
+- Bugfix: Cancelling saving unsaved file dialog leads to invalid internal state, so no compilation could be executed any more, only after restarting Atom
+
 **0.10.2 - 24.09.2015**
 - Improved and fixed direction compilation; now supporting SCSS and SASS
 - Bugfix: Multiple parallel compilations were possible

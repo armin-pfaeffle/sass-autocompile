@@ -41,6 +41,11 @@ class NodeSassCompiler
                 if error
                     @throwErrorAndFinish(error)
 
+                # Check if there is a first line paramter
+                if params is false and @options.compileOnlyFirstLineCommentFiles
+                    @emitter.emit('finished', @getBasicEmitterParameters())
+                    return
+
                 # In case there is a "main" inline paramter, params is a string and contains the
                 # target filename.
                 # It's important to check that inputFile.path is not params because of infinite loop
