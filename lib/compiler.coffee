@@ -28,18 +28,18 @@ class NodeSassCompiler
         # If no inputFile.path is given, then we cannot compile the file or content, because something
         # is wrong
         if not @inputFile.path
-            @throwErrorAndFinish('Invalid file: ' + @inputFile.path)
+            @throwMessageAndFinish('error', 'Invalid file: ' + @inputFile.path)
 
         # Check file existance
         else if not fs.existsSync(@inputFile.path)
-            @throwErrorAndFinish('File does not exist: ' + @inputFile.path)
+            @throwMessageAndFinish('error', 'File does not exist: ' + @inputFile.path)
 
         else
             # Parse inline parameters
             parameters = new SassAutocompileInlineParameters()
             parameters.parse @inputFile.path, (params, error) =>
                 if error
-                    @throwErrorAndFinish(error)
+                    @throwMessageAndFinish('error', error)
 
                 # Check if there is a first line paramter
                 if params is false and @options.compileOnlyFirstLineCommentFiles
@@ -51,17 +51,21 @@ class NodeSassCompiler
                 # It's important to check that inputFile.path is not params because of infinite loop
                 else if typeof params is 'string' and params isnt @inputFile.path
                     if @inputFile.isTemporary
-                        @throwErrorAndFinish('\'main\' inline parameter is not supported in direct compilation.')
+                        @throwMessageAndFinish('error', '\'main\' inline parameter is not supported in direct compilation.')
                     else
                         @compile(@mode, params)
                 else
                     if @isCompileToFile() and not @ensureFileIsSaved()
+                        @emit.emit('finished', @getBasicEmitterParameters())
                         return
 
                     @emitter.emit('start', @getBasicEmitterParameters())
 
                     @updateOptionsWithInlineParameters(params)
                     @outputStyles = @getOutputStylesToCompileTo()
+
+                    if @outputStyles.length is 0
+                        @throwMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
 
                     # Start recursive compilation
                     @doCompile()
@@ -411,7 +415,7 @@ class NodeSassCompiler
                 @doCompile() # <--- Recursion!!!
 
         catch error
-            emitterParameters.error = error
+            emitterParameters.message = error
             @emitter.emit('error', emitterParameters)
 
             # Clear output styles, so no further compilation will be executed
@@ -436,7 +440,7 @@ class NodeSassCompiler
                 else
                     errorMessage = error.message
 
-                emitterParameters.error = errorMessage
+                emitterParameters.message = errorMessage
                 @emitter.emit('error', emitterParameters)
 
                 # Clear output styles, so no further compilation will be executed
@@ -554,15 +558,14 @@ class NodeSassCompiler
         return execParameters
 
 
-    throwErrorAndFinish: (error) ->
+    throwMessageAndFinish: (type, message) ->
         if @inputFile and @inputFile.isTemporary
-            console.log('delete: ' + @inputFile.path)
             file.delete(@inputFile.path)
         if @outputFile and @outputFile.isTemporary
             file.delete(@outputFile.path)
 
-        emitterParameters = @getBasicEmitterParameters({ error: error })
-        @emitter.emit('error', emitterParameters)
+        emitterParameters = @getBasicEmitterParameters({ message: message })
+        @emitter.emit(type, emitterParameters)
         @emitter.emit('finished', @getBasicEmitterParameters())
 
 

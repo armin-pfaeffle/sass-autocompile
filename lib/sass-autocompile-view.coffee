@@ -84,9 +84,9 @@ class SassAutocompileView extends View
         if @options.showPanel
             @showPanel()
             if args.outputFilename
-                @addText(args.message, '', 'warning', (evt) => @openFile(args.outputFilename, evt.target))
+                @addText(args.message, 'issue-opened', 'warning', (evt) => @openFile(args.outputFilename, evt.target))
             else
-                @addText(args.message, '', 'warning')
+                @addText(args.message, 'issue-opened', 'warning')
 
 
     successfullCompilation: (args) ->
@@ -138,44 +138,44 @@ class SassAutocompileView extends View
 
         # Notification
         caption = 'Compilation error'
-        if args.error.file
-            errorNotification = "ERROR:\n" + args.error.message
+        if args.message.file
+            errorNotification = "ERROR:\n" + args.message.message
             if args.isCompileToFile
-                errorNotification += "\n \nFILE:\n" + args.error.file
-            errorNotification += "\n \nLINE:    " + args.error.line + "\nCOLUMN:  " + args.error.column
+                errorNotification += "\n \nFILE:\n" + args.message.file
+            errorNotification += "\n \nLINE:    " + args.message.line + "\nCOLUMN:  " + args.message.column
         else
-            errorNotification = args.error
+            errorNotification = args.message
         @showErrorNotification(caption, errorNotification)
 
         # Panel
         if @options.showPanel
             @showPanel()
 
-            if args.error.file
+            if args.message.file
                 errorMessage = $$ ->
                     @div class: 'open-error-file', =>
                         @p class: "icon icon-alert text-error", =>
                             @span class: "error-caption", 'Error:'
-                            @span class: "error-text", args.error.message
+                            @span class: "error-text", args.message.message
                             if args.isCompileDirect
-                                @span class: 'error-line', args.error.line
-                                @span class: 'error-column', args.error.column
+                                @span class: 'error-line', args.message.line
+                                @span class: 'error-column', args.message.column
 
                         if args.isCompileToFile
                             @p class: 'error-details text-error', =>
                                 @span class: 'error-file-wrapper', =>
                                     @span 'in:'
-                                    @span class: 'error-file', args.error.file
-                                    @span class: 'error-line', args.error.line
-                                    @span class: 'error-column', args.error.column
-                @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.inputFilename, args.error.line, args.error.column, evt.target))
-            else if args.error.message
-                @addText(args.error.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
+                                    @span class: 'error-file', args.message.file
+                                    @span class: 'error-line', args.message.line
+                                    @span class: 'error-column', args.message.column
+                @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.inputFilename, args.message.line, args.message.column, evt.target))
+            else if args.message.message
+                @addText(args.message.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
             else
-                @addText(args.error, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
+                @addText(args.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
 
-        if @options.directlyJumpToError and args.error.file
-            @openFile(args.error.file, args.error.line, args.error.column)
+        if @options.directlyJumpToError and args.message.file
+            @openFile(args.message.file, args.message.line, args.message.column)
 
 
     appendNodeSassOutput: (output) ->

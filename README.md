@@ -442,6 +442,10 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.10.4 - 14.10.2015**
+- Bugfix: Package showed "Successfully Compiled" message, although no compilation has been executed
+- Minor changes
+
 **0.10.3 - 27.09.2015**
 - Bugfix: Option "Compile files only with first-line-comment" did not work
 - Bugfix: Cancelling saving unsaved file dialog leads to invalid internal state, so no compilation could be executed any more, only after restarting Atom
