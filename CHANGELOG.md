@@ -1,5 +1,8 @@
+**0.10.5 - 16.10.2015**
+- Bugfix: Clicking on error message in panel did not open correct child file which contains the error ([issue #28](https://github.com/armin-pfaeffle/sass-autocompile/issues/28))
+
 **0.10.4 - 14.10.2015**
-- Bugfix: Package showed "Successfully Compiled" message, although no compilation has been executed
+- Bugfix: Package showed "Successfully Compiled" message, although no compilation has been executed ([issue #26](https://github.com/armin-pfaeffle/sass-autocompile/issues/26))
 - Minor changes
 
 **0.10.3 - 27.09.2015**

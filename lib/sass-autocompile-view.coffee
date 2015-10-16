@@ -168,7 +168,7 @@ class SassAutocompileView extends View
                                     @span class: 'error-file', args.message.file
                                     @span class: 'error-line', args.message.line
                                     @span class: 'error-column', args.message.column
-                @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.inputFilename, args.message.line, args.message.column, evt.target))
+                @addText(errorMessage, 'alert', 'error', (evt) => @openFile(args.message.file, args.message.line, args.message.column, evt.target))
             else if args.message.message
                 @addText(args.message.message, 'alert', 'error', (evt) => @openFile(args.inputFilename, null, null, evt.target))
             else
