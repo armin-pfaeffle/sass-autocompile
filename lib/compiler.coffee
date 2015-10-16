@@ -20,6 +20,12 @@ class NodeSassCompiler
         @emitter = new Emitter()
 
 
+    destroy: () ->
+        console.log 'destroy'
+        @emitter.dispose()
+        @emitter = null
+
+
     # If filename is null then active text editor is used for compilation
     compile: (mode, filename = null) ->
         @mode = mode

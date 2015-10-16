@@ -1,3 +1,4 @@
+
 // out: main-scss.css, sourceMap: true, includePath: .\include
 
 #main {
@@ -12,7 +13,7 @@
 
 @import "child";
 
-@import "include";
+@import "include/include";
 .foo {
     content: hello-world();
 }
@@ -24,4 +25,4 @@
 @warn 'warning message';
 @warn 'warning message';
 @warn 'warning message';
-@error 'error message';
+// @error 'error message';

@@ -442,6 +442,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.10.6 - 17.10.2015**
+- Bugfix: Missing disposing of assigned events
+
 **0.10.5 - 16.10.2015**
 - Bugfix: Clicking on error message in panel did not open correct child file which contains the error ([issue #28](https://github.com/armin-pfaeffle/sass-autocompile/issues/28))
 

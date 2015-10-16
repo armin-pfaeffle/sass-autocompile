@@ -235,10 +235,13 @@ class SassAutocompileView extends View
                 atom.workspace.open().then (editor) =>
                     @nodeSassOutputEditor = editor
                     editor.setText(@nodeSassOutput)
-                    editor.onDidSave =>
+
+                    subscriptions = new CompositeDisposable
+                    subscriptions.add editor.onDidSave =>
                         @nodeSassOutputEditor = null
-                    editor.onDidDestroy =>
+                    subscriptions.add editor.onDidDestroy =>
                         @nodeSassOutputEditor = null
+                        subscriptions.dispose()
             else
                 pane = atom.workspace.paneForItem(@nodeSassOutputEditor)
                 pane.activateItem(@nodeSassOutputEditor)

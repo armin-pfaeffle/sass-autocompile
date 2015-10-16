@@ -295,6 +295,7 @@ module.exports =
 
     deactivate: () ->
         @subscriptions.dispose()
+        @editorSubscriptions.dispose()
         @sassAutocompileView.destroy()
 
 
@@ -406,34 +407,40 @@ module.exports =
 
 
     compile: (mode, filename = null) ->
+        if @isProcessing
+            return
+
         options = new SassAutocompileOptions()
         @isProcessing = true
 
         @sassAutocompileView.updateOptions(options)
         @sassAutocompileView.hidePanel(false, true)
 
-        compiler = new NodeSassCompiler(options)
-        compiler.onStart (args) =>
+        @compiler = new NodeSassCompiler(options)
+        @compiler.onStart (args) =>
             @sassAutocompileView.startCompilation(args)
 
-        compiler.onWarning (args) =>
+        @compiler.onWarning (args) =>
             @sassAutocompileView.warning(args)
 
-        compiler.onSuccess (args) =>
+        @compiler.onSuccess (args) =>
             @sassAutocompileView.successfullCompilation(args)
 
-        compiler.onError (args) =>
+        @compiler.onError (args) =>
             @sassAutocompileView.erroneousCompilation(args)
 
-        compiler.onFinished (args) =>
+        @compiler.onFinished (args) =>
             @sassAutocompileView.finished(args)
             @isProcessing = false
+            @compiler.destroy()
+            @compiler = null
 
-        compiler.compile(mode, filename)
+        @compiler.compile(mode, filename)
 
 
     registerTextEditorSaveCallback: () ->
-        atom.workspace.observeTextEditors (editor) =>
+        @editorSubscriptions = new CompositeDisposable
+        @editorSubscriptions.add atom.workspace.observeTextEditors (editor) =>
             @subscriptions.add editor.onDidSave =>
                 if SassAutocompileOptions.get('compileOnSave') and !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())
                     @compile(NodeSassCompiler.MODE_FILE)
