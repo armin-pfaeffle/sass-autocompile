@@ -1,4 +1,5 @@
 {$, $$, View} = require('atom-space-pen-views')
+{CompositeDisposable} = require('atom')
 
 fs = require('fs')
 file = require('./file')
@@ -239,6 +240,7 @@ class SassAutocompileView extends View
                     subscriptions = new CompositeDisposable
                     subscriptions.add editor.onDidSave =>
                         @nodeSassOutputEditor = null
+
                     subscriptions.add editor.onDidDestroy =>
                         @nodeSassOutputEditor = null
                         subscriptions.dispose()

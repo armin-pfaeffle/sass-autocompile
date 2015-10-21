@@ -1,3 +1,6 @@
+**0.10.7 - 21.10.2015**
+- Bugfix: Could not open detailed output more than once because of missing "require" statement ([issue #30](https://github.com/armin-pfaeffle/sass-autocompile/issues/30))
+
 **0.10.6 - 17.10.2015**
 - Bugfix: Missing disposing of assigned events
 

@@ -21,7 +21,6 @@ class NodeSassCompiler
 
 
     destroy: () ->
-        console.log 'destroy'
         @emitter.dispose()
         @emitter = null
 

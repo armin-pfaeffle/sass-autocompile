@@ -1,4 +1,4 @@
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable} = require('atom')
 
 SassAutocompileOptions = require('./options')
 SassAutocompileView = require('./sass-autocompile-view')
