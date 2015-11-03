@@ -8,20 +8,31 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 
+# Mac OS
 '.platform-darwin atom-workspace atom-text-editor:not(.mini)':
     'ctrl-shift-c': 'sass-autocompile:compile-to-file'
     'cmd-shift-c': 'sass-autocompile:compile-direct'
+
+'.platform-darwin':
     'ctrl-cmd-shift-s': 'sass-autocompile:toggle-compile-on-save'
     'ctrl-cmd-shift-h': 'sass-autocompile:close-message-panel'
 
+
+# Linux
 '.platform-linux atom-workspace atom-text-editor:not(.mini)':
     'ctrl-shift-c': 'sass-autocompile:compile-to-file'
     'alt-shift-c': 'sass-autocompile:compile-direct'
+
+'.platform-linux':
     'ctrl-alt-shift-s': 'sass-autocompile:toggle-compile-on-save'
     'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'
 
+
+# Windows
 '.platform-win32 atom-workspace atom-text-editor:not(.mini)':
     'ctrl-shift-c': 'sass-autocompile:compile-to-file'
     'alt-shift-c': 'sass-autocompile:compile-direct'
+
+'.platform-win32':
     'ctrl-alt-shift-s': 'sass-autocompile:toggle-compile-on-save'
     'ctrl-alt-shift-h': 'sass-autocompile:close-message-panel'

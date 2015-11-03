@@ -272,6 +272,8 @@ module.exports =
 
     activate: (state) ->
         @subscriptions = new CompositeDisposable
+        @editorSubscriptions = new CompositeDisposable
+
         @sassAutocompileView = new SassAutocompileView(new SassAutocompileOptions(), state.sassAutocompileViewState)
         @isProcessing = false
 
@@ -354,7 +356,9 @@ module.exports =
             target = evt.target
             if evt.target.nodeName.toLowerCase() is 'span'
                 target= evt.target.parentNode
-            filename = target.firstElementChild.getAttribute('data-path')
+            isFileItem = target.getAttribute('class').split(' ').indexOf('file') >= 0
+            if isFileItem
+                filename = target.firstElementChild.getAttribute('data-path')
 
         if @isSassFile(filename)
             @compile(NodeSassCompiler.MODE_FILE, filename)
@@ -439,7 +443,6 @@ module.exports =
 
 
     registerTextEditorSaveCallback: () ->
-        @editorSubscriptions = new CompositeDisposable
         @editorSubscriptions.add atom.workspace.observeTextEditors (editor) =>
             @subscriptions.add editor.onDidSave =>
                 if SassAutocompileOptions.get('compileOnSave') and !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())
@@ -478,8 +481,8 @@ module.exports =
             showItemOption = SassAutocompileOptions.get('showCompileSassItemInTreeViewContextMenu')
             if showItemOption
                 target = evt.target
-                if evt.target.nodeName.toLowerCase() is 'span'
-                    target = evt.target.parentNode
+                if target.nodeName.toLowerCase() is 'span'
+                    target = target.parentNode
 
                 isFileItem = target.getAttribute('class').split(' ').indexOf('file') >= 0
                 if isFileItem

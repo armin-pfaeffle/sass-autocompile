@@ -47,7 +47,7 @@ class NodeSassCompiler
                     @throwMessageAndFinish('error', error)
 
                 # Check if there is a first line paramter
-                if params is false and @options.compileOnlyFirstLineCommentFiles
+                else if params is false and @options.compileOnlyFirstLineCommentFiles
                     @emitter.emit('finished', @getBasicEmitterParameters())
                     return
 
@@ -72,8 +72,9 @@ class NodeSassCompiler
                     if @outputStyles.length is 0
                         @throwMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
 
-                    # Start recursive compilation
-                    @doCompile()
+                    else
+                        # Start recursive compilation
+                        @doCompile()
 
 
     setupInputFile: (filename = null) ->
@@ -134,8 +135,9 @@ class NodeSassCompiler
         editors = atom.workspace.getTextEditors()
         for editor in editors
             if editor and editor.getURI and editor.getURI() is @inputFile.path and editor.isModified()
+                filename = path.basename(@inputFile.path)
                 dialogResultButton = atom.confirm
-                    message: "'#{editor.getTitle()}' has changes, do you want to save them?"
+                    message: "'#{filename}' has changes, do you want to save them?"
                     detailedMessage: "In order to compile SASS you have to save changes."
                     buttons: ["Save and compile", "Cancel"]
                 if dialogResultButton is 0
@@ -569,8 +571,7 @@ class NodeSassCompiler
         if @outputFile and @outputFile.isTemporary
             file.delete(@outputFile.path)
 
-        emitterParameters = @getBasicEmitterParameters({ message: message })
-        @emitter.emit(type, emitterParameters)
+        @emitter.emit(type, @getBasicEmitterParameters({ message: message }))
         @emitter.emit('finished', @getBasicEmitterParameters())
 
 
@@ -599,17 +600,17 @@ class NodeSassCompiler
         @emitter.on 'start', callback
 
 
-    onError: (callback) ->
-        @emitter.on 'error', callback
-
-
     onSuccess: (callback) ->
         @emitter.on 'success', callback
 
 
-    onFinished: (callback) ->
-        @emitter.on 'finished', callback
-
-
     onWarning: (callback) ->
         @emitter.on 'warning', callback
+
+
+    onError: (callback) ->
+        @emitter.on 'error', callback
+
+
+    onFinished: (callback) ->
+        @emitter.on 'finished', callback

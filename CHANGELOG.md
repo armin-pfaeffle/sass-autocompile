@@ -1,3 +1,8 @@
+**0.10.8 - 03.11.2015**
+- Bugfix: Invalid code path execution when no output style is available ([issue 31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31)
+- Bugfix: "Compile SASS" item in Tree View context menu was not working correctly
+- Minor improvements
+
 **0.10.7 - 21.10.2015**
 - Bugfix: Could not open detailed output more than once because of missing "require" statement ([issue #30](https://github.com/armin-pfaeffle/sass-autocompile/issues/30))
 
