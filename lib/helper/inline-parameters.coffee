@@ -3,7 +3,7 @@ fs = require('fs')
 
 
 module.exports =
-class SassAutocompileInlineParameters
+class InlineParameters
 
     parse: (filename, callback) ->
         @readFirstLine filename, (line, error) =>
@@ -51,30 +51,26 @@ class SassAutocompileInlineParameters
 
 
     parseParameters: (str) ->
-        # Extract comment block, if comment is put into /* ... */
-        if (match = /^\s*\/\*\s*(.*?)\s*\*\//m.exec(str)) != null
-            str = match[1]
-
-        # ... or extract comment block if it is prefixed with:
-        #    //     --      %
-        else if (match = /^\s*(?:\/\/|--|%)\s*(.*)/m.exec(str)) != null
-            str = match[1]
+        # Extract comment block, if comment is put into /* ... */ or after //, #, -- or &
+        regex = /^\s*(?:(?:\/\*\s*(.*?)\s*\*\/)|(?:(?:\/\/|#|--|%)\s*(.*)))/m
+        if (match = regex.exec(str)) != null
+            str = if match[2] then match[2] else match[1]
 
         # ... there is no comment at all
         else
             return false
 
         # Extract keys and values
-        regex = /(?:\s*([\w-]+)(?:[ ]*\:\s*((?:["'](?:.*?)["'])|[^,;]+))?\s*)*/g
+        regex = /(?:([\w-\.]+)(?:\s*:\s*(?:(?:'(.*?)')|(?:"(.*?)")|([^,;]+)))?)*/g
         params = []
-        while (match = regex.exec(str)) != null
+        while (match = regex.exec(str)) isnt null
             if match.index == regex.lastIndex
                 regex.lastIndex++
 
             if match[1] != undefined
                 key = match[1].trim()
-                value = @parseValue(match[2])
-                params[key] = value
+                value = if match[2] then match[2] else if match[3] then match[3] else match[4]
+                params[key] = @parseValue(value)
 
         return params
 

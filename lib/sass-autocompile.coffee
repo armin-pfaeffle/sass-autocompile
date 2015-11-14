@@ -4,7 +4,7 @@ SassAutocompileOptions = require('./options')
 SassAutocompileView = require('./sass-autocompile-view')
 NodeSassCompiler = require('./compiler')
 
-file = require('./file')
+File = require('./helper/file')
 
 
 module.exports =
@@ -450,7 +450,7 @@ module.exports =
 
 
     isSassFile: (filename) ->
-        return file.hasFileExtension(filename, ['.scss', '.sass'])
+        return File.hasFileExtension(filename, ['.scss', '.sass'])
 
 
     registerConfigObserver: () ->

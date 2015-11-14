@@ -1,10 +1,11 @@
 {Emitter} = require('event-kit')
 SassAutocompileOptions = require('./options')
-SassAutocompileInlineParameters = require('./inline-parameters')
+
+InlineParameters = require('./helper/inline-parameters')
+File = require('./helper/file')
 
 fs = require('fs')
 path = require('path')
-file = require('./file')
 exec = require('child_process').exec
 
 
@@ -28,53 +29,55 @@ class NodeSassCompiler
     # If filename is null then active text editor is used for compilation
     compile: (mode, filename = null) ->
         @mode = mode
+        @filename = filename
         @setupInputFile(filename)
 
         # If no inputFile.path is given, then we cannot compile the file or content, because something
         # is wrong
         if not @inputFile.path
             @throwMessageAndFinish('error', 'Invalid file: ' + @inputFile.path)
+            return
 
         # Check file existance
-        else if not fs.existsSync(@inputFile.path)
+        if not fs.existsSync(@inputFile.path)
             @throwMessageAndFinish('error', 'File does not exist: ' + @inputFile.path)
+            return
 
-        else
-            # Parse inline parameters
-            parameters = new SassAutocompileInlineParameters()
-            parameters.parse @inputFile.path, (params, error) =>
-                if error
-                    @throwMessageAndFinish('error', error)
+        # Parse inline parameters
+        parameters = new InlineParameters()
+        parameters.parse @inputFile.path, (params, error) =>
+            if error
+                @throwMessageAndFinish('error', error)
+                return
 
-                # Check if there is a first line paramter
-                else if params is false and @options.compileOnlyFirstLineCommentFiles
-                    @emitter.emit('finished', @getBasicEmitterParameters())
+            # Check if there is a first line paramter
+            if params is false and @options.compileOnlyFirstLineCommentFiles
+                @emitter.emit('finished', @getBasicEmitterParameters())
+                return
+
+            # In case there is a "main" inline paramter, params is a string and contains the
+            # target filename.
+            # It's important to check that inputFile.path is not params because of infinite loop
+            if typeof params is 'string' and params isnt @inputFile.path
+                if @inputFile.isTemporary
+                    @throwMessageAndFinish('error', '\'main\' inline parameter is not supported in direct compilation.')
+                else
+                    @compile(@mode, params)
+            else
+                if @isCompileToFile() and not @ensureFileIsSaved()
+                    @emit.emit('finished', @getBasicEmitterParameters())
                     return
 
-                # In case there is a "main" inline paramter, params is a string and contains the
-                # target filename.
-                # It's important to check that inputFile.path is not params because of infinite loop
-                else if typeof params is 'string' and params isnt @inputFile.path
-                    if @inputFile.isTemporary
-                        @throwMessageAndFinish('error', '\'main\' inline parameter is not supported in direct compilation.')
-                    else
-                        @compile(@mode, params)
-                else
-                    if @isCompileToFile() and not @ensureFileIsSaved()
-                        @emit.emit('finished', @getBasicEmitterParameters())
-                        return
+                @emitter.emit('start', @getBasicEmitterParameters())
 
-                    @emitter.emit('start', @getBasicEmitterParameters())
+                @updateOptionsWithInlineParameters(params)
+                @outputStyles = @getOutputStylesToCompileTo()
 
-                    @updateOptionsWithInlineParameters(params)
-                    @outputStyles = @getOutputStylesToCompileTo()
+                if @outputStyles.length is 0
+                    @throwMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
+                    return
 
-                    if @outputStyles.length is 0
-                        @throwMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
-
-                    else
-                        # Start recursive compilation
-                        @doCompile()
+                @doCompile()
 
 
     setupInputFile: (filename = null) ->
@@ -90,7 +93,7 @@ class NodeSassCompiler
             if @isCompileDirect()
                 syntax = @askForInputSyntax()
                 if syntax
-                    @inputFile.path = file.getTemporaryFilename('sass-autocompile.input.', null, syntax)
+                    @inputFile.path = File.getTemporaryFilename('sass-autocompile.input.', null, syntax)
                     @inputFile.isTemporary = true
                     fs.writeFileSync(@inputFile.path, activeEditor.getText())
                 else
@@ -99,6 +102,7 @@ class NodeSassCompiler
                 @inputFile.path = activeEditor.getURI()
                 if not @inputFile.path
                     @inputFile.path = @askForSavingUnsavedFileInActiveEditor()
+
 
     askForInputSyntax: () ->
         dialogResultButton = atom.confirm
@@ -342,7 +346,7 @@ class NodeSassCompiler
             isTemporary: false
 
         if @isCompileDirect()
-            outputFile.path = file.getTemporaryFilename('sass-autocompile.output.', null, 'css')
+            outputFile.path = File.getTemporaryFilename('sass-autocompile.output.', null, 'css')
             outputFile.isTemporary = true
         else
             switch outputFile.style
@@ -387,14 +391,87 @@ class NodeSassCompiler
     ensureOutputDirectoryExists: (outputFile) ->
         if @isCompileToFile()
             outputPath = path.dirname(outputFile.path)
-            file.ensureDirectoryExists(outputPath)
+            File.ensureDirectoryExists(outputPath)
+
+
+    tryToFindNodeSassInstallation: (callback) ->
+        # Command which checks if node-sass is accessable without absolute path
+        # This command works on Windows, Linux and Mac OS
+        devNull = if process.platform is 'win32' then 'nul' else '/dev/null'
+        existanceCheckCommand = "node-sass --version >#{devNull} 2>&1 && (echo found) || (echo fail)"
+
+        possibleNodeSassPaths = ['']
+        if typeof @options.nodeSassPath is 'string' and @options.nodeSassPath.length > 1
+            possibleNodeSassPaths.push(@options.nodeSassPath)
+        if process.platform is 'win32'
+            possibleNodeSassPaths.push( path.join(process.env[ if process.platform is 'win32' then 'USERPROFILE' else 'HOME' ], 'AppData\\Roaming\\npm') )
+        if process.platform is 'linux'
+            possibleNodeSassPaths.push('/usr/local/bin')
+        if process.platform is 'darwin'
+            possibleNodeSassPaths.push('/usr/local/bin')
+
+
+        checkNodeSassExists = (foundInPath) =>
+            if typeof foundInPath is 'string'
+                if foundInPath  is @options.nodeSassPath
+                    callback(true, false)
+                else if @askAndFixNodeSassPath(foundInPath)
+                    callback(true, true)
+                else
+                    callback(false, false)
+                return
+
+            if possibleNodeSassPaths.length is 0
+                # NOT found and NOT fixed
+                callback(false, false)
+                return
+
+            searchPath = possibleNodeSassPaths.shift()
+            command = path.join(searchPath, existanceCheckCommand)
+            environment = Object.create(process.env)
+            if typeof searchPath is 'string' and searchPath.length > 1
+                environment.PATH += ":#{searchPath}"
+
+            exec command, { env: environment }, (error, stdout, stderr) =>
+                if stdout.trim() is 'found'
+                    checkNodeSassExists(searchPath)
+                else
+                    checkNodeSassExists()
+
+
+        # Start recursive search for node-sass command
+        checkNodeSassExists()
+
+
+    askAndFixNodeSassPath: (nodeSassPath) ->
+        if nodeSassPath is '' and @options.nodeSassPath isnt ''
+            detailedMessage = "'Path to node-sass command' option will be cleared, because node-sass is accessable without absolute path."
+
+        else if nodeSassPath isnt '' and @options.nodeSassPath is ''
+            detailedMessage = "'Path to node-sass command' option will be set to '#{nodeSassPath}', because command was found there."
+
+        else if nodeSassPath isnt '' and @options.nodeSassPath isnt ''
+            detailedMessage = "'Path to node-sass command' option will be replaced with '#{nodeSassPath}', because command was found there."
+
+        # Ask user to fix that path
+        dialogResultButton = atom.confirm
+            message: "'node-sass' command could not be found with current configuration, but it can be automatically fixed. Fix it?"
+            detailedMessage: detailedMessage
+            buttons: ["Fix it", "Cancel"]
+        switch dialogResultButton
+            when 0
+                SassAutocompileOptions.set('nodeSassPath', nodeSassPath)
+                @options.nodeSassPath = nodeSassPath
+                return true
+            when 1
+                return false
 
 
     doCompile: () ->
         if @outputStyles.length is 0
             @emitter.emit('finished', @getBasicEmitterParameters())
             if @inputFile.isTemporary
-                file.delete(@inputFile.path)
+                File.delete(@inputFile.path)
             return
 
         outputStyle = @outputStyles.pop();
@@ -417,9 +494,24 @@ class NodeSassCompiler
             @startCompilingTimestamp = new Date().getTime()
 
             execParameters = @prepareExecParameters(outputFile)
-            exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
-                @onCompiled(outputFile, error, stdout, stderr)
-                @doCompile() # <--- Recursion!!!
+            child = exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
+                # exitCode is 1 when something went wrong with executing node-sass command, not when
+                # there is an error in SASS
+                if child.exitCode > 0
+                    @tryToFindNodeSassInstallation (found, fixed) =>
+                        # Only retry to compile if node-sass command could be fixed, not if
+                        # node-sass could be found. Because there can be other erros than only
+                        # a non-findable node-sass
+                        if fixed
+                            @compile(@mode, @filename)
+                            # try again compiling
+                        else
+                            # throw error
+                            @onCompiled(outputFile, error, stdout, stderr)
+                            @doCompile() # <--- Recursion!!!
+                else
+                    @onCompiled(outputFile, error, stdout, stderr)
+                    @doCompile() # <--- Recursion!!!
 
         catch error
             emitterParameters.message = error
@@ -453,8 +545,8 @@ class NodeSassCompiler
                 # Clear output styles, so no further compilation will be executed
                 @outputStyles = [];
             else
-                statistics.before = file.getFileSize(@inputFile.path)
-                statistics.after = file.getFileSize(outputFile.path)
+                statistics.before = File.getFileSize(@inputFile.path)
+                statistics.after = File.getFileSize(outputFile.path)
                 statistics.unit = 'Byte'
 
                 if @isCompileDirect()
@@ -468,7 +560,7 @@ class NodeSassCompiler
             # Delete temporary created output file, even if there was an error
             # But do not delete a temporary input file, because of multiple outputs!
             if outputFile.isTemporary
-                file.delete(outputFile.path)
+                File.delete(outputFile.path)
 
 
     prepareExecParameters: (outputFile) ->
@@ -483,6 +575,7 @@ class NodeSassCompiler
         # to command and to environment variable PATH so shell AND node.js can find node-sass
         # executable
         if typeof @options.nodeSassPath is 'string' and @options.nodeSassPath.length > 1
+            # TODO: Hier sollte es so optimiert werden, dass wenn der absolute Pfad die Anwendung enthält diese übernommen werden sollte
             command = path.join(@options.nodeSassPath, command)
             environment.PATH += ":#{@options.nodeSassPath}"
 
@@ -567,9 +660,9 @@ class NodeSassCompiler
 
     throwMessageAndFinish: (type, message) ->
         if @inputFile and @inputFile.isTemporary
-            file.delete(@inputFile.path)
+            File.delete(@inputFile.path)
         if @outputFile and @outputFile.isTemporary
-            file.delete(@outputFile.path)
+            File.delete(@outputFile.path)
 
         @emitter.emit(type, @getBasicEmitterParameters({ message: message }))
         @emitter.emit('finished', @getBasicEmitterParameters())
@@ -585,7 +678,6 @@ class NodeSassCompiler
             parameters[key] = value
 
         return parameters
-
 
 
     isCompileDirect: ->

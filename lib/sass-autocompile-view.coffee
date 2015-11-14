@@ -1,8 +1,9 @@
 {$, $$, View} = require('atom-space-pen-views')
 {CompositeDisposable} = require('atom')
 
+File = require('./helper/file')
+
 fs = require('fs')
-file = require('./file')
 
 
 module.exports =
@@ -92,7 +93,7 @@ class SassAutocompileView extends View
 
     successfullCompilation: (args) ->
         @appendNodeSassOutput(args.nodeSassOutput)
-        fileSize = file.fileSizeToReadable(args.statistics.after)
+        fileSize = File.fileSizeToReadable(args.statistics.after)
 
         # Notification
         caption = "Successfully compiled"

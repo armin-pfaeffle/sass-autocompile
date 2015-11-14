@@ -442,6 +442,16 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 ## Changelog
 
+**0.11.0 - 12.11.2015**
+- New feature: if node-sass command can not bet found, it's looked for in known paths. If node-sass command can be found there, the user is asked to set the path, so he does not have to manually set 'Path to node-sass command' option
+- Improved inline parameter parsing
+- Minor improvements
+
+**0.10.8 - 03.11.2015**
+- Bugfix: Invalid code path execution when no output style is available ([issue 31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31)
+- Bugfix: "Compile SASS" item in Tree View context menu was not working correctly
+- Minor improvements
+
 **0.10.7 - 21.10.2015**
 - Bugfix: Could not open detailed output more than once because of missing "require" statement ([issue #30](https://github.com/armin-pfaeffle/sass-autocompile/issues/30))
 
