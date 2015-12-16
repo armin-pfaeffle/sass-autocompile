@@ -361,7 +361,7 @@ module.exports =
                 filename = target.firstElementChild.getAttribute('data-path')
 
         if @isSassFile(filename)
-            @compile(NodeSassCompiler.MODE_FILE, filename)
+            @compile(NodeSassCompiler.MODE_FILE, filename, false)
 
 
     compileDirect: (evt) ->
@@ -410,7 +410,7 @@ module.exports =
         @updateMenuItems()
 
 
-    compile: (mode, filename = null) ->
+    compile: (mode, filename = null, minifyOnSave = false) ->
         if @isProcessing
             return
 
@@ -439,14 +439,14 @@ module.exports =
             @compiler.destroy()
             @compiler = null
 
-        @compiler.compile(mode, filename)
+        @compiler.compile(mode, filename, minifyOnSave)
 
 
     registerTextEditorSaveCallback: () ->
         @editorSubscriptions.add atom.workspace.observeTextEditors (editor) =>
             @subscriptions.add editor.onDidSave =>
-                if SassAutocompileOptions.get('compileOnSave') and !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())
-                    @compile(NodeSassCompiler.MODE_FILE)
+                if !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())
+                    @compile(NodeSassCompiler.MODE_FILE, null, true)
 
 
     isSassFile: (filename) ->

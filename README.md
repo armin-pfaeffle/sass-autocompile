@@ -4,9 +4,7 @@ Automatically compiles SASS files on save or via shortcut, with extensive config
 
 ---
 
-Inspired by [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](https://atom.io/users/lohek), I have created a counterpart for [SASS](http://sass-lang.com/). This package can automatically compile your SASS file (file ending: `.scss` or `.sass`) when you save it. Or you can use shortcuts to do that. Beside that this package is highly configurable to fit all your needs.
-
-**Important**: *Since version 0.10.0 there have been some basic changes, especially in using first-line-comments. So please read this documentation!*
+Inspired by [less-autocompile](https://atom.io/packages/less-autocompile) package, written by [lohek](https://atom.io/users/lohek), I have created a counterpart for [SASS](http://sass-lang.com/). This package can automatically compile SASS files (file ending: `.scss` or `.sass`) when you save it. Or you can use shortcuts to do that. Beside that this package is highly configurable to fit all your needs.
 
 
 
@@ -105,9 +103,9 @@ To overwrite general options in order to use specific configuraion per project y
     #### Filename pattern for 'nested' compiled files
     #### Filename pattern for 'expanded' compiled files
 
-    With this options you can define a filename pattern for the output file of each output style.
+    With this options you can define a filename pattern for the output filename of each output style, include a relative or absolute output path.
 
-    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. For example: When you compile `Foo.sass` and you define `$1.minified.$2.css` as out paramter, the resulting filename will be `Foo.minified.sass.css`.
+    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`. Alternatively you can use absolute paths.
 
     *Default (compressed):* `$1.min.css`  
     *Default (compact):* `$1.compact.css`  
@@ -159,6 +157,13 @@ To overwrite general options in order to use specific configuraion per project y
 
 - #### Include path
     Path to look for imported files (`@import` declarations).
+
+    ~~When you want to apply multiple paths, you have to surround the paths by `[]`, example:~~
+    **NOT SUPPORTED BY NODE-SASS YET**
+
+    ```
+    [/path/to/your/project/lib, "/path to your/project/mod"]
+    ```
 
     *Defaut:* `''`
 
@@ -244,6 +249,19 @@ To overwrite general options in order to use specific configuraion per project y
 
 Add following parameters in *comma-separated* way to the **first line** of your SASS file. See [examples](#examples) for demonstration:
 
+- #### compileOnSave [ : true | false ]
+    With this option you can control compile on save functionality by first line parameter. If you define this option, global option is overwritten. Examples:
+
+    ```
+    Enable compile on save
+    // compileOnSave
+    // compileOnSave: true
+
+    Disable compile on save
+    // !compileOnSave
+    // compileOnSave: false
+    ```
+
 - #### compileCompressed
     #### compileCompact
     #### compileNested
@@ -251,18 +269,20 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 
     With these parameters you can define which output files should be generated. If one of these parameters is set, every other output styles are deactivated. So, if you have enabled all four output styles in global options and set e.g. `compileCompressed` in your inline parameters, only the compressed file is generated.
 
-    **Note**: Please read documentation about patterns too!
+    **Note**: Please read documentation about patterns too! You can combine the *compile* and *filenamePattern* parameter.
 
 - #### compressedFilenamePattern
     #### compactFilenamePattern
     #### nestedFilenamePattern
     #### expandedFilenamePattern
 
-    Defines the filename pattern for output files. You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. For example: When you compile `Foo.sass` and you define `$1.minified.$2.css` as out paramter, the resulting filename will be `Foo.minified.sass.css`.
+    With this parameter you can define a filename pattern for the output filename of each output style, including a relative or absolute output path.
+
+    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`.
 
     **Note**: There is a short form for combining the *compile* and *filenamePattern* parameter. For Example:
     ```
-    // compileCompressed: test.css
+    // compileCompressed: /path/to/your/project/css/test.css
     ```
     This line tells sass-autocompile to output a **compressed** version of the SASS input and to store in in `test.css`.
 
@@ -321,9 +341,20 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 - #### includePath
     Path to look for imported files. Can be a relative or absolute path.
 
+    ~~When you want to apply multiple paths, you have to surround the paths by `[]`.~~
+    **NOT SUPPORTED BY NODE-SASS YET**
+
+    When you want to apply multiple paths, you have to surround the paths by `[]`.
+
     *Value:* `<path>`
 
-    *Example:* `../my-framework/scss/`
+    *Examples:*
+
+    ```
+    includePath: ../my-framework/scss/
+    OR
+    includePath: [/path/to/your/project/lib, "/path to your/project/mod"]
+    ```
 
 
 - #### precision
@@ -441,6 +472,14 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 
 ## Changelog
+
+**0.12.0 - 16.12.2015**
+- Added new parameter: compileOnSave
+- Loop-detection when using main parameter
+- Improved inline parameter parsing performance
+- Improved inline parser now supports arrays and objects
+- Prepared for supporting multiple include paths
+
 
 **0.11.0 - 12.11.2015**
 - New feature: if node-sass command can not bet found, it's looked for in known paths. If node-sass command can be found there, the user is asked to set the path, so he does not have to manually set 'Path to node-sass command' option

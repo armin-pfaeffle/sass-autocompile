@@ -77,19 +77,28 @@ class File
 
 
     @fileSizeToReadable: (bytes, decimals = 2) ->
+        if typeof bytes is 'number'
+            bytes = [bytes]
+
+        units = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+        unitIndex = 0
+        decimals = Math.pow(10, decimals)
+        dividend = bytes[0]
+        divisor = 1024
+
+        while dividend >= divisor
+            divisor = divisor * 1024
+            unitIndex++
+        divisor = divisor / 1024
+
+        for i in [0..bytes.length - 1]
+            bytes[i] = Math.round(bytes[i] * decimals / divisor) / decimals
+
         readable =
             size: bytes
-            unit: 'Bytes'
-        decimals = Math.pow(10, decimals)
-        if readable.size >= 1024
-            readable.size = Math.round(readable.size * decimals / 1024) / decimals
-            readable.unit = 'KB'
-        if readable.size >= 1024
-            readable.size = Math.round(readable.size * decimals / 1024) / decimals
-            readable.unit = 'MB'
-        if readable.size >= 1024
-            readable.size = Math.round(readable.size * decimals / 1024) / decimals
-            readable.unit = 'GB'
+            unit: units[unitIndex]
+            divisor: divisor
+
         return readable
 
 

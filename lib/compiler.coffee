@@ -1,8 +1,9 @@
 {Emitter} = require('event-kit')
 SassAutocompileOptions = require('./options')
 
-InlineParameters = require('./helper/inline-parameters')
+InlineParameterParser = require('./helper/inline-parameters-parser')
 File = require('./helper/file')
+ArgumentParser = require('./helper/argument-parser')
 
 fs = require('fs')
 path = require('path')
@@ -26,58 +27,86 @@ class NodeSassCompiler
         @emitter = null
 
 
+    compile: (mode, filename = null, compileOnSave = false) ->
+        @compileOnSave = compileOnSave
+        @childFiles = {}
+        @_compile(mode, filename)
+
+
     # If filename is null then active text editor is used for compilation
-    compile: (mode, filename = null) ->
+    _compile: (mode, filename = null, compileOnSave = false) ->
         @mode = mode
-        @filename = filename
-        @setupInputFile(filename)
+        @targetFilename = filename
+        @inputFile = undefined
+        @outputFile = undefined
 
-        # If no inputFile.path is given, then we cannot compile the file or content, because something
-        # is wrong
-        if not @inputFile.path
-            @throwMessageAndFinish('error', 'Invalid file: ' + @inputFile.path)
-            return
-
-        # Check file existance
-        if not fs.existsSync(@inputFile.path)
-            @throwMessageAndFinish('error', 'File does not exist: ' + @inputFile.path)
-            return
-
-        # Parse inline parameters
-        parameters = new InlineParameters()
-        parameters.parse @inputFile.path, (params, error) =>
-            if error
-                @throwMessageAndFinish('error', error)
+        # Parse inline parameters and run compilation; for better performance we use active
+        # text-editor if possible, so parameter parser must not load file again
+        parameterParser = new InlineParameterParser()
+        parameterTarget = @getParameterTarget()
+        parameterParser.parse parameterTarget, (params, error) =>
+            # If package is called by save-event of editor, but compilation is prohibited by
+            # options or first line parameter, execution is cancelled
+            if @compileOnSave and @prohibitCompilationOnSave(params)
+                @emitFinished()
                 return
 
             # Check if there is a first line paramter
             if params is false and @options.compileOnlyFirstLineCommentFiles
-                @emitter.emit('finished', @getBasicEmitterParameters())
+                @emitFinished()
+                return
+
+            # A potenial parsing error is only handled if compilation is executed and that's the
+            # case if compiler is executed by command or after compile on save, so this code must
+            # be placed above the code before
+            if error
+                @emitMessageAndFinish('error', error, true)
+                return
+
+            @setupInputFile(filename)
+            if (errorMessage = @validateInputFile()) isnt undefined
+                @emitMessageAndFinish('error', errorMessage, true)
                 return
 
             # In case there is a "main" inline paramter, params is a string and contains the
             # target filename.
             # It's important to check that inputFile.path is not params because of infinite loop
-            if typeof params is 'string' and params isnt @inputFile.path
-                if @inputFile.isTemporary
-                    @throwMessageAndFinish('error', '\'main\' inline parameter is not supported in direct compilation.')
+            if typeof params.main is 'string'
+                if params.main is @inputFile.path or @childFiles[params.main] isnt undefined
+                    @emitMessageAndFinish('error', 'Following the main parameter ends in a loop.')
+                else if @inputFile.isTemporary
+                    @emitMessageAndFinish('error', '\'main\' inline parameter is not supported in direct compilation.')
                 else
-                    @compile(@mode, params)
+                    @childFiles[params.main] = true
+                    @_compile(@mode, params.main)
             else
-                if @isCompileToFile() and not @ensureFileIsSaved()
-                    @emit.emit('finished', @getBasicEmitterParameters())
-                    return
+                @emitStart()
 
-                @emitter.emit('start', @getBasicEmitterParameters())
+                if @isCompileToFile() and not @ensureFileIsSaved()
+                    @emitMessageAndFinish('warning', 'Compilation cancelled')
+                    return
 
                 @updateOptionsWithInlineParameters(params)
                 @outputStyles = @getOutputStylesToCompileTo()
 
                 if @outputStyles.length is 0
-                    @throwMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
+                    @emitMessageAndFinish('warning', 'No output style defined! Please enable at least one style in options or use inline parameters.')
                     return
 
                 @doCompile()
+
+
+    getParameterTarget: () ->
+        if typeof @targetFilename is 'string'
+            return @targetFilename
+        else
+            return atom.workspace.getActiveTextEditor()
+
+
+    prohibitCompilationOnSave: (params) ->
+        if params.compileOnSave in [true, false]
+            @options.compileOnSave = params.compileOnSave
+        return not @options.compileOnSave
 
 
     setupInputFile: (filename = null) ->
@@ -135,6 +164,20 @@ class NodeSassCompiler
         return undefined
 
 
+    validateInputFile: () ->
+        errorMessage = undefined
+
+        # If no inputFile.path is given, then we cannot compile the file or content,
+        # because something is wrong
+        if not @inputFile.path
+            errorMessage = 'Invalid file: ' + @inputFile.path
+
+        if not fs.existsSync(@inputFile.path)
+            errorMessage = 'File does not exist: ' + @inputFile.path
+
+        return errorMessage
+
+
     ensureFileIsSaved: () ->
         editors = atom.workspace.getTextEditors()
         for editor in editors
@@ -183,8 +226,7 @@ class NodeSassCompiler
         if typeof params.out is 'string' or typeof params.outputStyle is 'string' or typeof params.compress is 'boolean'
 
             if @options.showOldParametersWarning
-                emitterParameters = @getBasicEmitterParameters({ message: 'Please don\'t use \'out\', \'outputStyle\' or \'compress\' parameter any more. Have a look at the documentation for newer parameters' })
-                @emitter.emit('warning', emitterParameters)
+                @emitMessage('warning', 'Please don\'t use \'out\', \'outputStyle\' or \'compress\' parameter any more. Have a look at the documentation for newer parameters')
 
             # Set default output style
             outputStyle = 'compressed'
@@ -296,7 +338,7 @@ class NodeSassCompiler
             @options.sourceComments = params.sourceComments
 
         # includePath
-        if typeof params.includePath is 'string' and params.includePath.length > 1
+        if (typeof params.includePath is 'string' and params.includePath.length > 1) or Array.isArray(params.includePath)
             @options.includePath = params.includePath
 
         # precision
@@ -362,14 +404,11 @@ class NodeSassCompiler
 
             filename = basename.replace(new RegExp('^(.*?)\.(' + fileExtension + ')$', 'gi'), pattern)
 
-            outputPath = path.dirname(@inputFile.path)
-            if @options.outputPath
-                if path.isAbsolute(@options.outputPath)
-                    outputPath = @options.outputPath
-                else
-                    outputPath = path.join(outputPath, @options.outputPath)
+            if not path.isAbsolute(path.dirname(filename))
+                outputPath = path.dirname(@inputFile.path)
+                filename = path.join(outputPath, filename)
 
-            outputFile.path = path.join(outputPath, filename)
+            outputFile.path = filename
 
         return outputFile
 
@@ -469,7 +508,7 @@ class NodeSassCompiler
 
     doCompile: () ->
         if @outputStyles.length is 0
-            @emitter.emit('finished', @getBasicEmitterParameters())
+            @emitFinished()
             if @inputFile.isTemporary
                 File.delete(@inputFile.path)
             return
@@ -503,7 +542,7 @@ class NodeSassCompiler
                         # node-sass could be found. Because there can be other erros than only
                         # a non-findable node-sass
                         if fixed
-                            @compile(@mode, @filename)
+                            @_compile(@mode, @targetFilename)
                             # try again compiling
                         else
                             # throw error
@@ -629,9 +668,20 @@ class NodeSassCompiler
         # --include-path
         if @options.includePath
             includePath = @options.includePath
-            if not path.isAbsolute(includePath)
-                includePath = path.join(workingDirectory, includePath)
-            execParameters.push('--include-path "' + path.resolve(includePath) + '"')
+            if typeof includePath is 'string'
+                argumentParser = new ArgumentParser()
+                includePath = argumentParser.parseValue(includePath)
+            if Array.isArray(includePath)
+                for i in [0.. includePath.length - 1]
+                    if not path.isAbsolute(includePath[i])
+                        includePath[i] = path.join(workingDirectory, includePath[i])
+                    includePath[i] = path.resolve(includePath[i])
+                includePath = '[\'' + includePath.join("', '") + '\']'
+            else
+                if not path.isAbsolute(includePath)
+                    includePath = path.join(workingDirectory, includePath)
+                includePath = path.resolve(includePath)
+            execParameters.push('--include-path "' + includePath + '"')
 
         # --precision
         if typeof @options.precision is 'number'
@@ -658,26 +708,45 @@ class NodeSassCompiler
         return execParameters
 
 
-    throwMessageAndFinish: (type, message) ->
-        if @inputFile and @inputFile.isTemporary
-            File.delete(@inputFile.path)
-        if @outputFile and @outputFile.isTemporary
-            File.delete(@outputFile.path)
+    emitStart: () ->
+        @emitter.emit('start', @getBasicEmitterParameters())
 
-        @emitter.emit(type, @getBasicEmitterParameters({ message: message }))
+
+    emitFinished: () ->
+        @deleteTemporaryFiles()
         @emitter.emit('finished', @getBasicEmitterParameters())
+
+
+    emitMessage: (type, message) ->
+        @emitter.emit(type, @getBasicEmitterParameters({ message: message }))
+
+
+    emitMessageAndFinish: (type, message, emitStartEvent = false) ->
+        if emitStartEvent
+            @emitStart()
+        @emitMessage(type, message)
+        @emitFinished()
 
 
     getBasicEmitterParameters: (additionalParameters = {}) ->
         parameters =
             isCompileToFile: @isCompileToFile(),
             isCompileDirect: @isCompileDirect(),
-            inputFilename: @inputFile.path
+
+        if @inputFile
+            parameters.inputFilename = @inputFile.path
 
         for key, value of additionalParameters
             parameters[key] = value
 
         return parameters
+
+
+    deleteTemporaryFiles: ->
+        if @inputFile and @inputFile.isTemporary
+            File.delete(@inputFile.path)
+        if @outputFile and @outputFile.isTemporary
+            File.delete(@outputFile.path)
 
 
     isCompileDirect: ->

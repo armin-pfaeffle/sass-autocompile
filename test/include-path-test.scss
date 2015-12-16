@@ -1,0 +1,12 @@
+// includePath: "[includePath/a, includePath/b]"
+
+@import "include-a";
+@import "include-b";
+
+.element-a {
+    @include include-a-attributes();
+}
+
+.element-b {
+    @include include-b-attributes();
+}

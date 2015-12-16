@@ -1,3 +1,10 @@
+**0.12.0 - 16.12.2015**
+- Added new parameter: compileOnSave
+- Loop-detection when using main parameter
+- Improved inline parameter parsing performance
+- Improved inline parser now supports arrays and objects
+- Prepared for supporting multiple include paths
+
 **0.11.0 - 12.11.2015**
 - New feature: if node-sass command can not bet found, it's looked for in known paths. If node-sass command can be found there, the user is asked to set the path, so he does not have to manually set 'Path to node-sass command' option
 - Improved inline parameter parsing
