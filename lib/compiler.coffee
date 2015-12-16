@@ -671,17 +671,13 @@ class NodeSassCompiler
             if typeof includePath is 'string'
                 argumentParser = new ArgumentParser()
                 includePath = argumentParser.parseValue(includePath)
-            if Array.isArray(includePath)
-                for i in [0.. includePath.length - 1]
-                    if not path.isAbsolute(includePath[i])
-                        includePath[i] = path.join(workingDirectory, includePath[i])
-                    includePath[i] = path.resolve(includePath[i])
-                includePath = '[\'' + includePath.join("', '") + '\']'
-            else
-                if not path.isAbsolute(includePath)
-                    includePath = path.join(workingDirectory, includePath)
-                includePath = path.resolve(includePath)
-            execParameters.push('--include-path "' + includePath + '"')
+                if !Array.isArray(includePath)
+                    includePath = [includePath]
+
+            for i in [0 .. includePath.length - 1]
+                if not path.isAbsolute(includePath[i])
+                    includePath[i] = path.join(workingDirectory, includePath[i])
+                execParameters.push('--include-path "' + includePath[i] + '"')
 
         # --precision
         if typeof @options.precision is 'number'

@@ -158,8 +158,7 @@ To overwrite general options in order to use specific configuraion per project y
 - #### Include path
     Path to look for imported files (`@import` declarations).
 
-    ~~When you want to apply multiple paths, you have to surround the paths by `[]`, example:~~
-    **NOT SUPPORTED BY NODE-SASS YET**
+    When you want to apply multiple paths, you have to surround the paths by `[]`, example:
 
     ```
     [/path/to/your/project/lib, "/path to your/project/mod"]
@@ -341,9 +340,6 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 - #### includePath
     Path to look for imported files. Can be a relative or absolute path.
 
-    ~~When you want to apply multiple paths, you have to surround the paths by `[]`.~~
-    **NOT SUPPORTED BY NODE-SASS YET**
-
     When you want to apply multiple paths, you have to surround the paths by `[]`.
 
     *Value:* `<path>`
@@ -472,6 +468,9 @@ For other concerns like questions or feeback [have a look at the discussion thre
 
 
 ## Changelog
+
+**0.12.1 - 16.12.2015**
+- Fixed support for multiple include paths
 
 **0.12.0 - 16.12.2015**
 - Added new parameter: compileOnSave

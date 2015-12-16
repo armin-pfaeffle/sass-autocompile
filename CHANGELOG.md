@@ -1,3 +1,6 @@
+**0.12.1 - 16.12.2015**
+- Fixed support for multiple include paths
+
 **0.12.0 - 16.12.2015**
 - Added new parameter: compileOnSave
 - Loop-detection when using main parameter
