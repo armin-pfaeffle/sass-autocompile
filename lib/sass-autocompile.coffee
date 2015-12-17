@@ -164,8 +164,8 @@ module.exports =
             order: 44
 
         includePath:
-            title: 'Include path'
-            description: 'Path to look for imported files (@import declarations)'
+            title: 'Include paths'
+            description: 'Paths to look for imported files (@import declarations); comma separated, each path surrounded by quotes'
             type: 'string'
             default: ''
             order: 45

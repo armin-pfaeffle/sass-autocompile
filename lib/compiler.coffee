@@ -340,6 +340,8 @@ class NodeSassCompiler
         # includePath
         if (typeof params.includePath is 'string' and params.includePath.length > 1) or Array.isArray(params.includePath)
             @options.includePath = params.includePath
+        else if (typeof params.includePaths is 'string' and params.includePaths.length > 1) or Array.isArray(params.includePaths)
+            @options.includePath = params.includePaths
 
         # precision
         if typeof params.precision is 'number' and params.precision >= 0
@@ -614,7 +616,7 @@ class NodeSassCompiler
         # to command and to environment variable PATH so shell AND node.js can find node-sass
         # executable
         if typeof @options.nodeSassPath is 'string' and @options.nodeSassPath.length > 1
-            # TODO: Hier sollte es so optimiert werden, dass wenn der absolute Pfad die Anwendung enthält diese übernommen werden sollte
+            # TODO: Hier sollte es so optimiert werden, dass wenn der absolute Pfad die Anwendung enthÃ¤lt diese Ã¼bernommen werden sollte
             command = path.join(@options.nodeSassPath, command)
             environment.PATH += ":#{@options.nodeSassPath}"
 
@@ -670,7 +672,7 @@ class NodeSassCompiler
             includePath = @options.includePath
             if typeof includePath is 'string'
                 argumentParser = new ArgumentParser()
-                includePath = argumentParser.parseValue(includePath)
+                includePath = argumentParser.parseValue('[' + includePath + ']')
                 if !Array.isArray(includePath)
                     includePath = [includePath]
 
