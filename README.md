@@ -26,21 +26,21 @@ After you have installed this package, option **Compile on save** is enabled, so
 
 Alternatively you can use shortcuts for starting compilation:
 
-1. `ctrl-shit-c`: Compile SASS file to a CSS file
+1. `ctrl-shift-c`: Compile SASS file to a CSS file
 2. `alt-shift-c` / `cmd-shift-c`: Direct compilation; replaces SASS text with compiled CSS
 
-The third method is to use the Tree View context menu where you can find a **Compile SASS** item when right clicking on a file with `.scss` or `.sass` extenion.
+The third method is to use the Tree View context menu where you can find a **Compile SASS** item when right clicking on a file with `.scss` or `.sass` extension.
 
 **Note**: When you want to compile a SASS file to a CSS File (→ *Compile to file*) the file extension must be `.scss` or `.sass`. You don't need a first-line-comment since version 0.10.0.
 
-After compiling a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compiliation fails, you can even jump to error position in the corresponding SASS file where error occured.
+After compiling a SASS file, you should see a notification or a panel at the bottom of the editor, depending on your settings, showing you an error or success message. If you use *panel notification* ([see options](#options) -> `Notifications`) , you have the possibility to access the output CSS file by clicking on the compilation message. If compilation fails, you can even jump to error position in the corresponding SASS file where error occurred.
 
 When using panel notification you can use **Show detailed output** link in the header caption of the panel to open detailed output of `node-sass` command (available since 0.7.0). Additionally you can set option [Show node-sass output after compilation](#show-node-sass-output-after-compilation) to automatically show output after compilation.
 
 
 ### Compile to file
 
-This feature is the *defalt* behaviour and the method you will use most. It compiles a SASS file to a CSS file. When you save a SASS file or use the Tree View context menu this method is used.
+This feature is the *default* behaviour and the method you will use most. It compiles a SASS file to a CSS file. When you save a SASS file or use the Tree View context menu this method is used.
 
 
 ### Direct compilation
@@ -52,7 +52,7 @@ When you want to instantly compile a SASS text, you can copy it to a new tab and
 
 Since version 0.10.0 there are many new options. So have a look at the package options and configure the general behaviour for compiling SASS files. In the [options](#options) section everything is explained in detail.
 
-To overwrite general options in order to use specific configuraion per project you can set paramters as comment in the first line. Have a look at the [parameters](#paramters) where any paramter is described and how you can use it.
+To overwrite general options in order to use specific configuration per project you can set parameters as comment in the first line. Have a look at the [parameters](#parameters) where any parameter is described and how you can use it.
 
 
 
@@ -105,7 +105,7 @@ To overwrite general options in order to use specific configuraion per project y
 
     With this options you can define a filename pattern for the output filename of each output style, include a relative or absolute output path.
 
-    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`. Alternatively you can use absolute paths.
+    You can use `$1` and `$2` as placeholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`. Alternatively you can use absolute paths.
 
     *Default (compressed):* `$1.min.css`  
     *Default (compact):* `$1.compact.css`  
@@ -116,7 +116,7 @@ To overwrite general options in order to use specific configuraion per project y
 - #### Indent type
     With this option you can set the indention type: space or tab.
 
-    *Defaut:* `space`
+    *Default:* `space`
 
 
 - #### Indent width
@@ -128,31 +128,31 @@ To overwrite general options in order to use specific configuraion per project y
 - #### Linefeed
     Used to determine whether to use `cr`, `crlf`, `lf` or `lfcr` sequence for line break.
 
-    *Defaut:* `lf`
+    *Default:* `lf`
 
 
 - #### Build source map
     If enabled a [source map](http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/) is generated. Filename is automatically obtained by taking the output CSS filename and appending `.map`, e.g. `output.css.map`.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
 - #### Embed source map
     If enabled source map (see option [Build source map](#build-source-map)) is embedded as a data URI.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
 - #### Include contents in source map information
     If enabled contents are included in source map information.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
 - #### Include additional debugging information in the output CSS file
     If enabled additional debugging information are added to the output file as CSS comments. If CSS is compressed this feature is disabled by SASS compiler.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
 - #### Include paths
@@ -163,83 +163,83 @@ To overwrite general options in order to use specific configuraion per project y
     /path/to/your/project/lib, "/path to your/project/mod"
     ```
 
-    *Defaut:* `''`
+    *Default:* `''`
 
 
 - #### Precision
     Used to determine how many digits after the decimal will be allowed. For instance, if you had a decimal number of 1.23456789 and a precision of 5, the result will be 1.23457 in the final CSS.
 
-    *Defaut:* `5`
+    *Default:* `5`
 
 
 - #### Filename to custom importer
     If you want to use a custom import functionality, you can use this option to define a path to a JavaScript file that contains your code.
 
-    *Defaut:* `''`
+    *Default:* `''`
 
 
 - #### Filename to custom functions
     If you have custom functions you want to include, you use this option to set a path to your corresponding JavaScript file.
 
-    *Defaut:* `''`
+    *Default:* `''`
 
 
 - #### Notification type
     This options allows you to decide which feedback you want to see when SASS files are compiled: notification and/or panel.
 
-    **Panel**: The panel is shown at the bottom of the editor. When starting the compilation it's only a small header with a throbber. After compiliation a success or error message is shown with reference to the CSS file, or on error the SASS file. By clicking on the message you can access the CSS or error file.
+    **Panel**: The panel is shown at the bottom of the editor. When starting the compilation it's only a small header with a throbber. After compilation a success or error message is shown with reference to the CSS file, or on error the SASS file. By clicking on the message you can access the CSS or error file.
 
     **Notification**: The default atom notifications are used for output.
 
-    *Defaut:* `Panel`
+    *Default:* `Panel`
 
 
 - #### Automatically hide panel on ...
     Select on which event the panel should automatically disappear. If you want to hide the panel via shortcut, you can use `ctrl-alt-shift-h` / `ctrl-cmd-shift-h`.
 
-    *Defaut:* `Success`
+    *Default:* `Success`
 
 
 - #### Panel-auto-hide delay
     Delay after which panel is automatically hidden.
 
-    *Defaut:* `3000`
+    *Default:* `3000`
 
 
 - #### Automatically hide notifications on ...
     Decide when you want the notifications to automatically hide. Else you have to close every notification manually.
 
-    *Defaut:* `Info, Success`
+    *Default:* `Info, Success`
 
 
 - #### Show 'Start Compiling' Notification
     If enabled and you added the notification option in `Notifications`, you will see an info-message when compile process starts.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
 - #### Show additional compilation info
-    If enabled additiona info like duration or file size is presented.
+    If enabled additional info like duration or file size is presented.
 
-    *Defaut:* `true`
+    *Default:* `true`
 
 
 - #### Show node-sass output after compilation
     If enabled detailed output of node-sass command is automatically shown in a new tab after each compilation. So you can analyse the output, especially when using [@debug](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_5), [@warn](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_6) or [@error](http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_7) in your SASS.
 
-    *Defaut:* `false`
+    *Default:* `false`
 
 
-- #### Show warning when using old paramters
-    If enabled any time you compile a SASS file und you use old inline paramters, an warning will be occur not to use them.
+- #### Show warning when using old parameters
+    If enabled any time you compile a SASS file und you use old inline parameters, an warning will be occur not to use them.
 
-    *Defaut:* `true`
+    *Default:* `true`
 
 
 - #### Path to 'node-sass' command
     Absolute path where 'node-sass' executable is placed (Mac OS X: `/usr/local/bin`, Linux: `?`). This option is especially for Mac OS and Linux users who have problems with permissions and seeing error message `command failed: /bin/sh: node-sass: command not found`.
 
-    *Defaut:* `''`
+    *Default:* `''`
 
 
 
@@ -276,7 +276,7 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 
     With this parameter you can define a filename pattern for the output filename of each output style, including a relative or absolute output path.
 
-    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`.
+    You can use `$1` and `$2` as placeholder for the original basename respectively the file extension. Furthermore you can add a relative or an absolute path where compiled files are stored to. For example: When you compile `Foo.sass` and have `..\css\$1.minified.$2.css` as filename pattern, the resulting filename will be `Foo.minified.sass.css` and is stored in the relative path `..\css\`.
 
     **Note**: There is a short form for combining the *compile* and *filenamePattern* parameter. For Example:
     ```
@@ -374,22 +374,22 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 
 ### Deprecated
 
-These parameters are supported, but will be removed in future. Please use the corresponding paramters described above.
+These parameters are supported, but will be removed in future. Please use the corresponding parameters described above.
 
 - #### out
-    Defines the output filename pattern. If you set this paramter only one output file is generated. You should use this paramter in combination with `outputStyle`. If you use `out` but do **not** define `outputStyle` the default output style will be `compressed`.
+    Defines the output filename pattern. If you set this parameter only one output file is generated. You should use this parameter in combination with `outputStyle`. If you use `out` but do **not** define `outputStyle` the default output style will be `compressed`.
 
-    You can use `$1` and `$2` as placerholder for the original basename respectively the file extension. For example: When you compile `Foo.sass` and you define `$1.minified.$2.css` as out paramter, the resulting filename will be `Foo.minified.sass.css`.    
+    You can use `$1` and `$2` as placeholder for the original basename respectively the file extension. For example: When you compile `Foo.sass` and you define `$1.minified.$2.css` as out parameter, the resulting filename will be `Foo.minified.sass.css`.    
 
     *Values*: `<filename.css>`
 
 - #### outputStyle
-    You can define the output style. Have a look at [this page](https://web-design-weekly.com/2014/06/15/different-sass-output-styles/) where the difference is explained and shown in examples. If you set this paramter only one output file is generated.
+    You can define the output style. Have a look at [this page](https://web-design-weekly.com/2014/06/15/different-sass-output-styles/) where the difference is explained and shown in examples. If you set this parameter only one output file is generated.
 
     *Values*: `compressed | compact | nested | expanded`
 
 - #### compress
-    Instead of using `outputStyle` you can set this parameter in order to en- or disable compressen. If enabled `outputStyle` is set to `compressed`, else to `nested`.
+    Instead of using `outputStyle` you can set this parameter in order to en- or disable compression. If enabled `outputStyle` is set to `compressed`, else to `nested`.
 
     If you use `compress` **and** `outputStyle`, compress is ignored.
 
@@ -414,7 +414,7 @@ Or you only want to overwrite some filename patterns?
 // compressedFilenamePattern: ../css/min/$1.css, expandedFilenamePattern: ../css/$1.css
 ```
 
-#### Main paramter
+#### Main parameter
 
 If you use `@import` command in SASS, you should define the `main` parameter in the *child files*. Imagine you have the following structure:
 ```
@@ -455,7 +455,7 @@ The special about this parameter is, that when you save a child file, the `main.
 
 [Please post issues on GitHub](https://github.com/armin-pfaeffle/sass-autocompile/issues).
 
-For other concerns like questions or feeback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
+For other concerns like questions or feedback [have a look at the discussion thread on atom.io](https://discuss.atom.io/t/issues-questions-feedback-about-sass-autocompile/15233).
 
 
 
