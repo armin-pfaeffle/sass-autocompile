@@ -70,6 +70,12 @@ To overwrite general options in order to use specific configuraion per project y
     *Default:* `Every SASS file`
 
 
+- #### Compile Partials
+    When you compile a Partial file (by saving it) and there is no first-line-comment, you can control if *sass-autocompile*  compiles this file or not.
+
+    *Default:* `false`
+
+
 - #### Ask for overwriting already existent files
     If enabled and output file already exists, you are asked if you want to overwrite it. Else files are automatically overwritten .
 

@@ -71,8 +71,8 @@ class InlineParameterParser
 
 
     parseParameters: (str) ->
-        # Extract comment block, if comment is put into /* ... */ or after //, #, -- or &
-        regex = /^\s*(?:(?:\/\*\s*(.*?)\s*\*\/)|(?:(?:\/\/|#|--|%)\s*(.*)))/m
+        # Extract comment block, if comment is put into /* ... */ or after //
+        regex = /^\s*(?:(?:\/\*\s*(.*?)\s*\*\/)|(?:\/\/\s*(.*)))/m
         if (match = regex.exec(str)) != null
             str = if match[2] then match[2] else match[1]
 

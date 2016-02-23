@@ -68,6 +68,12 @@ class NodeSassCompiler
                 @emitMessageAndFinish('error', errorMessage, true)
                 return
 
+            # If there is NO first-line-comment, so no main file is referenced, we should check
+            # is user wants to compile Partials
+            if params is false and @isPartial() and not @options.compilePartials
+                @emitFinished()
+                return
+
             # In case there is a "main" inline paramter, params is a string and contains the
             # target filename.
             # It's important to check that inputFile.path is not params because of infinite loop
@@ -107,6 +113,11 @@ class NodeSassCompiler
         if params.compileOnSave in [true, false]
             @options.compileOnSave = params.compileOnSave
         return not @options.compileOnSave
+
+
+    isPartial: () ->
+        filename = path.basename(@inputFile.path)
+        return (filename[0] == '_')
 
 
     setupInputFile: (filename = null) ->

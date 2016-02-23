@@ -1,3 +1,11 @@
+**0.12.3 - 23.02.2016**
+- New option: "Compile Partials" ([issue 52](https://github.com/armin-pfaeffle/sass-autocompile/issues/52)
+- Bugfix: Compilation started with "Only with first-line-comment" when having an ID definition in first line ([issue 53](https://github.com/armin-pfaeffle/sass-autocompile/issues/53)
+
+**0.12.2 - 17.12.2015**
+- Improved documentation
+- Added additional parameter `includePaths` as alias for `includePath`
+
 **0.12.1 - 16.12.2015**
 - Fixed support for multiple include paths
 
@@ -14,7 +22,7 @@
 - Minor improvements
 
 **0.10.8 - 03.11.2015**
-- Bugfix: Invalid code path execution when no output style is available ([issue 31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31)
+- Bugfix: Invalid code path execution when no output style is available ([issue 31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31))
 - Bugfix: "Compile SASS" item in Tree View context menu was not working correctly
 - Minor improvements
 

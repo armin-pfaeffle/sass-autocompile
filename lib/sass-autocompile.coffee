@@ -28,19 +28,26 @@ module.exports =
             default: 'Every SASS file'
             order: 11
 
+        compilePartials:
+            title: 'Compile Partials'
+            description: 'Controls compilation of Partials (underscore as first character in filename) if there is no first-line-comment'
+            type: 'boolean'
+            default: false
+            order: 12
+
         checkOutputFileAlreadyExists:
             title: 'Ask for overwriting already existent files'
             description: 'If target file already exists, sass-autocompile will ask you before overwriting'
             type: 'boolean'
             default: false
-            order: 12
+            order: 13
 
         directlyJumpToError:
             title: 'Directly jump to error'
             description: 'If enabled and you compile an erroneous SASS file, this file is opened and jumped to the problematic position.'
             type: 'boolean'
             default: false
-            order: 13
+            order: 14
 
         showCompileSassItemInTreeViewContextMenu:
             title: 'Show \'Compile SASS\' item in Tree View context menu'
@@ -48,7 +55,7 @@ module.exports =
             type: 'string'
             type: 'boolean'
             default: true
-            order: 14
+            order: 15
 
 
         # node-sass options

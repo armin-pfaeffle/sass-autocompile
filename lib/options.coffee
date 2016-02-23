@@ -25,6 +25,7 @@ class SassAutocompileOptions
         @compileOnSave = SassAutocompileOptions.get('compileOnSave')
         @compileEverySassFiles = SassAutocompileOptions.get('compileFiles') is 'Every SASS file'
         @compileOnlyFirstLineCommentFiles = SassAutocompileOptions.get('compileFiles') is 'Only with first-line-comment'
+        @compilePartials = SassAutocompileOptions.get('compilePartials')
         @checkOutputFileAlreadyExists = SassAutocompileOptions.get('checkOutputFileAlreadyExists')
         @directlyJumpToError = SassAutocompileOptions.get('directlyJumpToError')
         @showCompileSassItemInTreeViewContextMenu = SassAutocompileOptions.get('showCompileSassItemInTreeViewContextMenu')
