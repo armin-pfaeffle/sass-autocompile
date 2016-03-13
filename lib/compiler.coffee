@@ -110,7 +110,7 @@ class NodeSassCompiler
 
 
     prohibitCompilationOnSave: (params) ->
-        if params.compileOnSave in [true, false]
+        if params and params.compileOnSave in [true, false]
             @options.compileOnSave = params.compileOnSave
         return not @options.compileOnSave
 

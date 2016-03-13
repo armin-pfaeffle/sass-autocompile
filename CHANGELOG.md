@@ -1,3 +1,6 @@
+**0.12.4 - 13.03.2016**
+- Bugfix: "Compile on Save" parameter detection failed when invalid parameters were given ([issue 58](https://github.com/armin-pfaeffle/sass-autocompile/issues/58)
+
 **0.12.3 - 23.02.2016**
 - New option: "Compile Partials" ([issue 52](https://github.com/armin-pfaeffle/sass-autocompile/issues/52)
 - Bugfix: Compilation started with "Only with first-line-comment" when having an ID definition in first line ([issue 53](https://github.com/armin-pfaeffle/sass-autocompile/issues/53)
