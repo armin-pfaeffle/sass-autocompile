@@ -162,8 +162,7 @@ To overwrite general options in order to use specific configuration per project 
 
 
 - #### Include paths
-    Paths to look for imported files (`@import` declarations). Multiple paths must be separated by
-    commas. If you need spaces, commas or semicolons in a path, it must be surrounded by quotes.
+    Paths to look for files that are referenced by `@import` declarations (e.g. SASS frameworks or your own general SASS style collection). Multiple paths must be separated by commas. If you need spaces, commas or semicolons in a path, it must be surrounded by quotes.
 
     ```
     /path/to/your/project/lib, "/path to your/project/mod"
@@ -343,8 +342,7 @@ Add following parameters in *comma-separated* way to the **first line** of your 
 
 
 - #### includePath | includePaths
-    Paths to look for imported files. Can be relative or absolute paths. If spaces, commas or semicolons
-    are needed, a path must be surrounded by quotes.
+    Paths to look for files that are referenced by `@import` declarations (e.g. SASS frameworks or your own general SASS style collection). Can be relative or absolute paths. If spaces, commas or semicolons are needed, a path must be surrounded by quotes.
 
     When you want to apply multiple paths, you have to surround the paths by `[]`, see examples above.
 

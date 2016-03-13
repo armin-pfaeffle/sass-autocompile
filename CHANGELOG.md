@@ -1,3 +1,6 @@
+**0.12.5 - 13.03.2016**
+- Documentation improved, based on (issue 57](https://github.com/armin-pfaeffle/sass-autocompile/issues/57)
+
 **0.12.4 - 13.03.2016**
 - Bugfix: "Compile on Save" parameter detection failed when invalid parameters were given ([issue 58](https://github.com/armin-pfaeffle/sass-autocompile/issues/58)
 
