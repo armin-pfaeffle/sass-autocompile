@@ -453,7 +453,7 @@ module.exports =
         @editorSubscriptions.add atom.workspace.observeTextEditors (editor) =>
             @subscriptions.add editor.onDidSave =>
                 if !@isProcessing and editor and editor.getURI and @isSassFile(editor.getURI())
-                    @compile(NodeSassCompiler.MODE_FILE, null, true)
+                   @compile(NodeSassCompiler.MODE_FILE, editor.getURI(), true)
 
 
     isSassFile: (filename) ->

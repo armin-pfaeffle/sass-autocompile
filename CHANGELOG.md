@@ -1,5 +1,8 @@
+**0.12.6 - 31.03.2016**
+- Bugfix: Compiled wrong file when option "auto save" is enabled and user switched tab ([issue 60](https://github.com/armin-pfaeffle/sass-autocompile/issues/60))
+
 **0.12.5 - 13.03.2016**
-- Documentation improved, based on (issue 57](https://github.com/armin-pfaeffle/sass-autocompile/issues/57)
+- Documentation improved, based on [issue 57](https://github.com/armin-pfaeffle/sass-autocompile/issues/57)
 
 **0.12.4 - 13.03.2016**
 - Bugfix: "Compile on Save" parameter detection failed when invalid parameters were given ([issue 58](https://github.com/armin-pfaeffle/sass-autocompile/issues/58)
