@@ -1,15 +1,18 @@
+**0.12.7 - 31.05.2016**
+- Bugfix: Prevent from compiling file when there is no active text editor ([issue #67](https://github.com/armin-pfaeffle/sass-autocompile/issues/67))
+
 **0.12.6 - 31.03.2016**
-- Bugfix: Compiled wrong file when option "auto save" is enabled and user switched tab ([issue 60](https://github.com/armin-pfaeffle/sass-autocompile/issues/60))
+- Bugfix: Compiled wrong file when option "auto save" is enabled and user switched tab ([issue #60](https://github.com/armin-pfaeffle/sass-autocompile/issues/60))
 
 **0.12.5 - 13.03.2016**
 - Documentation improved, based on [issue 57](https://github.com/armin-pfaeffle/sass-autocompile/issues/57)
 
 **0.12.4 - 13.03.2016**
-- Bugfix: "Compile on Save" parameter detection failed when invalid parameters were given ([issue 58](https://github.com/armin-pfaeffle/sass-autocompile/issues/58)
+- Bugfix: "Compile on Save" parameter detection failed when invalid parameters were given ([issue #58](https://github.com/armin-pfaeffle/sass-autocompile/issues/58)
 
 **0.12.3 - 23.02.2016**
 - New option: "Compile Partials" ([issue 52](https://github.com/armin-pfaeffle/sass-autocompile/issues/52)
-- Bugfix: Compilation started with "Only with first-line-comment" when having an ID definition in first line ([issue 53](https://github.com/armin-pfaeffle/sass-autocompile/issues/53)
+- Bugfix: Compilation started with "Only with first-line-comment" when having an ID definition in first line ([issue #53](https://github.com/armin-pfaeffle/sass-autocompile/issues/53)
 
 **0.12.2 - 17.12.2015**
 - Improved documentation
@@ -31,7 +34,7 @@
 - Minor improvements
 
 **0.10.8 - 03.11.2015**
-- Bugfix: Invalid code path execution when no output style is available ([issue 31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31))
+- Bugfix: Invalid code path execution when no output style is available ([issue #31](https://github.com/armin-pfaeffle/sass-autocompile/issues/31))
 - Bugfix: "Compile SASS" item in Tree View context menu was not working correctly
 - Minor improvements
 

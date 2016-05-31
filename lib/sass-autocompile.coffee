@@ -356,9 +356,11 @@ module.exports =
 
 
     compileToFile: (evt) ->
+        filename = undefined
         if evt.target.nodeName.toLowerCase() is 'atom-text-editor'
             activeEditor = atom.workspace.getActiveTextEditor()
-            filename = activeEditor.getURI()
+            if activeEditor
+                filename = activeEditor.getURI()
         else
             target = evt.target
             if evt.target.nodeName.toLowerCase() is 'span'
@@ -372,6 +374,7 @@ module.exports =
 
 
     compileDirect: (evt) ->
+        return unless atom.workspace.getActiveTextEditor()
         @compile(NodeSassCompiler.MODE_DIRECT)
 
 
