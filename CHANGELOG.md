@@ -1,3 +1,6 @@
+**0.12.8 - 06.07.2016**
+- Bugfix: Fixed cloning of `process.env`, which did not worked via `Object.create` any more
+
 **0.12.7 - 31.05.2016**
 - Bugfix: Prevent from compiling file when there is no active text editor ([issue #67](https://github.com/armin-pfaeffle/sass-autocompile/issues/67))
 

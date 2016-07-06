@@ -480,7 +480,7 @@ class NodeSassCompiler
 
             searchPath = possibleNodeSassPaths.shift()
             command = path.join(searchPath, existanceCheckCommand)
-            environment = Object.create(process.env)
+            environment = JSON.parse(JSON.stringify( process.env ));
             if typeof searchPath is 'string' and searchPath.length > 1
                 environment.PATH += ":#{searchPath}"
 
@@ -621,7 +621,7 @@ class NodeSassCompiler
         command = 'node-sass ' + nodeSassParameters.join(' ')
 
         # Clone current environment, so do not touch the global one but can modify the settings
-        environment = Object.create(process.env)
+        environment = JSON.parse(JSON.stringify( process.env ));
 
         # Because of permission problems in Mac OS and Linux we sometimes need to add nodeSassPath
         # to command and to environment variable PATH so shell AND node.js can find node-sass
