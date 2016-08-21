@@ -74,4 +74,5 @@ class SassAutocompileOptions
         @showOldParametersWarning  = SassAutocompileOptions.get('showOldParametersWarning')
 
         # Advanced options
+        @nodeSassTimeout = SassAutocompileOptions.get('nodeSassTimeout')
         @nodeSassPath = SassAutocompileOptions.get('nodeSassPath')

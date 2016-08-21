@@ -241,6 +241,13 @@ To overwrite general options in order to use specific configuration per project 
     *Default:* `true`
 
 
+- #### 'node-sass' execution timeout
+    Maximal amount of time (in milliseconds) node-sass is allowed to run. If it's set to 0, there is no time limit
+    for execution.
+
+    *Default:* 10000
+
+
 - #### Path to 'node-sass' command
     Absolute path where 'node-sass' executable is placed (Mac OS X: `/usr/local/bin`, Linux: `?`). This option is especially for Mac OS and Linux users who have problems with permissions and seeing error message `command failed: /bin/sh: node-sass: command not found`.
 

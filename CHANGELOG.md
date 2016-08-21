@@ -1,3 +1,6 @@
+**0.13.0 - 21.08.2016**
+- New option: 'node-sass' execution timeout
+
 **0.12.8 - 06.07.2016**
 - Bugfix: Fixed cloning of `process.env`, which did not worked via `Object.create` any more
 

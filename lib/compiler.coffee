@@ -546,7 +546,8 @@ class NodeSassCompiler
             @startCompilingTimestamp = new Date().getTime()
 
             execParameters = @prepareExecParameters(outputFile)
-            child = exec execParameters.command, { env: execParameters.environment }, (error, stdout, stderr) =>
+            timeout = if @options.nodeSassTimeout > 0 then @options.nodeSassTimeout else 0
+            child = exec execParameters.command, { env: execParameters.environment, timeout: timeout }, (error, stdout, stderr) =>
                 # exitCode is 1 when something went wrong with executing node-sass command, not when
                 # there is an error in SASS
                 if child.exitCode > 0
@@ -559,10 +560,10 @@ class NodeSassCompiler
                             # try again compiling
                         else
                             # throw error
-                            @onCompiled(outputFile, error, stdout, stderr)
+                            @onCompiled(outputFile, error, stdout, stderr, child.killed)
                             @doCompile() # <--- Recursion!!!
                 else
-                    @onCompiled(outputFile, error, stdout, stderr)
+                    @onCompiled(outputFile, error, stdout, stderr, child.killed)
                     @doCompile() # <--- Recursion!!!
 
         catch error
@@ -575,7 +576,7 @@ class NodeSassCompiler
             @doCompile() # <--- Recursion!!!
 
 
-    onCompiled: (outputFile, error, stdout, stderr) ->
+    onCompiled: (outputFile, error, stdout, stderr, killed) ->
         emitterParameters = @getBasicEmitterParameters({ outputFilename: outputFile.path, outputStyle: outputFile.style })
         statistics =
             duration: new Date().getTime() - @startCompilingTimestamp
@@ -584,18 +585,25 @@ class NodeSassCompiler
             # Save node-sass compilation output (info, warnings, errors, etc.)
             emitterParameters.nodeSassOutput = if stdout then stdout else stderr
 
-            if error isnt null
-                if error.message.indexOf('"message":') > -1
-                    errorJson = error.message.match(/{\n(.*?(\n))+}/gm);
-                    errorMessage = JSON.parse(errorJson)
+            if error isnt null or killed
+                if killed
+                    # node-sass has been executed too long
+                    errorMessage = "Compilation cancelled because of timeout (#{@options.nodeSassTimeout} ms)"
+
                 else
-                    errorMessage = error.message
+                    # error while executing node-sass
+                    if error.message.indexOf('"message":') > -1
+                        errorJson = error.message.match(/{\n(.*?(\n))+}/gm);
+                        errorMessage = JSON.parse(errorJson)
+                    else
+                        errorMessage = error.message
 
                 emitterParameters.message = errorMessage
                 @emitter.emit('error', emitterParameters)
 
                 # Clear output styles, so no further compilation will be executed
                 @outputStyles = [];
+
             else
                 statistics.before = File.getFileSize(@inputFile.path)
                 statistics.after = File.getFileSize(outputFile.path)

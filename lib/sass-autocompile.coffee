@@ -264,12 +264,19 @@ module.exports =
 
         # Advanced options
 
+        nodeSassTimeout:
+            title: '\'node-sass\' execution timeout'
+            description: 'Maximal execution time of \'node-sass\''
+            type: 'integer'
+            default: 10000
+            order: 80
+
         nodeSassPath:
             title: 'Path to \'node-sass\' command'
             description: 'Absolute path where \'node-sass\' executable is placed. Please read documentation before usage!'
             type: 'string'
             default: ''
-            order: 80
+            order: 81
 
 
     sassAutocompileView: null
