@@ -1,3 +1,6 @@
+**0.13.1 - 07.10.2016**
+- Fixed spelling bug.
+
 **0.13.0 - 21.08.2016**
 - New option: 'node-sass' execution timeout
 
