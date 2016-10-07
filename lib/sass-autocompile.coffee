@@ -51,7 +51,7 @@ module.exports =
 
         showCompileSassItemInTreeViewContextMenu:
             title: 'Show \'Compile SASS\' item in Tree View context menu'
-            description: 'If enbaled, Tree View context menu contains a \'Compile SASS\' item that allows you to compile that file via context menu'
+            description: 'If enabled, Tree View context menu contains a \'Compile SASS\' item that allows you to compile that file via context menu'
             type: 'string'
             type: 'boolean'
             default: true
