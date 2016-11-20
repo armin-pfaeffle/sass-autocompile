@@ -1,3 +1,6 @@
+**0.13.2 - 20.11.2016**
+- Bugfix: Command `Compile to file` did not works since 1.13.0-beta4
+
 **0.13.1 - 07.10.2016**
 - Fixed spelling bug.
 
