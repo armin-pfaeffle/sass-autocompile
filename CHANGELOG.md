@@ -113,7 +113,7 @@
 - Fixed includePath parameter option, so it works correctly now
 
 **0.7.4 - 30.07.2015**
-- Added support for `.sass` file extension (thanks to [Chris Kjærsig](https://github.com/cmk2179) for this idea!)
+- Added support for `.sass` file extension (thanks to [Chris KjÃ¦rsig](https://github.com/cmk2179) for this idea!)
 
 **0.7.3 - 24.07.2015**
 - Bugfix: Fixed issue [#10](https://github.com/armin-pfaeffle/sass-autocompile/issues/10)

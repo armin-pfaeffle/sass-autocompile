@@ -103,6 +103,7 @@ class File
 
 
     @hasFileExtension: (filename, extension) ->
+        return false unless typeof filename == 'string'
         fileExtension = path.extname(filename)
         if typeof extension is 'string'
             extension = [extension]

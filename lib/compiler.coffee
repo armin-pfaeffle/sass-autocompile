@@ -465,7 +465,7 @@ class NodeSassCompiler
 
         checkNodeSassExists = (foundInPath) =>
             if typeof foundInPath is 'string'
-                if foundInPath  is @options.nodeSassPath
+                if foundInPath is @options.nodeSassPath
                     callback(true, false)
                 else if @askAndFixNodeSassPath(foundInPath)
                     callback(true, true)

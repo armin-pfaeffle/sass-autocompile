@@ -364,7 +364,7 @@ module.exports =
 
     compileToFile: (evt) ->
         filename = undefined
-        if evt.target.nodeName.toLowerCase() is 'atom-text-editor'
+        if evt.target.nodeName.toLowerCase() is 'atom-text-editor' or evt.target.nodeName.toLowerCase() is 'input'
             activeEditor = atom.workspace.getActiveTextEditor()
             if activeEditor
                 filename = activeEditor.getURI()
