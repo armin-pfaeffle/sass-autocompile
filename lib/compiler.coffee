@@ -698,6 +698,12 @@ class NodeSassCompiler
             for i in [0 .. includePath.length - 1]
                 if not path.isAbsolute(includePath[i])
                     includePath[i] = path.join(workingDirectory, includePath[i])
+
+                # Remove trailing (back-)slash, because else there seems to be a bug in node-sass
+                # so compiling ends in an infinite loop
+                if includePath[i].substr(-1) is path.sep
+                    includePath[i] = includePath[i].substr(0, includePath[i].length - 1)
+
                 execParameters.push('--include-path "' + includePath[i] + '"')
 
         # --precision

@@ -1,3 +1,6 @@
+**0.13.3 - 10.02.2017**
+- Bugfix: Fixed a bug which leads to infinite loop when using an include-path with an trailing backslash.
+
 **0.13.2 - 20.11.2016**
 - Bugfix: Command `Compile to file` did not works since 1.13.0-beta4
 
