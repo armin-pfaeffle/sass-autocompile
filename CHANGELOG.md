@@ -1,3 +1,6 @@
+**0.13.4 - 18.01.2018**
+- Fixed typo, pull request #139.
+
 **0.13.3 - 10.02.2017**
 - Bugfix: Fixed a bug which leads to infinite loop when using an include-path with an trailing backslash.
 
