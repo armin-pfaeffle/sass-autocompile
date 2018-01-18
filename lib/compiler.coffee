@@ -146,7 +146,7 @@ class NodeSassCompiler
 
     askForInputSyntax: () ->
         dialogResultButton = atom.confirm
-            message: "Is the syntax if your inout SASS or SCSS?"
+            message: "Is the syntax of your input SASS or SCSS?"
             buttons: ['SASS', 'SCSS', 'Cancel']
         switch dialogResultButton
             when 0 then syntax = 'sass'
