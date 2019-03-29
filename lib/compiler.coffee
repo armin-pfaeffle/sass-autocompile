@@ -584,6 +584,18 @@ class NodeSassCompiler
         try
             # Save node-sass compilation output (info, warnings, errors, etc.)
             emitterParameters.nodeSassOutput = if stdout then stdout else stderr
+                
+            warningRe = /WARNING: (.*)/g
+
+            if stderr.search(warningRe) != -1
+                stderrMatches = warningRe.exec(stderr)
+                while stderrMatches != null
+                    warningMessage = stderrMatches[1]
+
+                    emitterParametersWarn = @getBasicEmitterParameters({ outputFilename: outputFile.path, outputStyle: outputFile.style })
+                    emitterParametersWarn.message = warningMessage
+                    @emitter.emit('warning', emitterParametersWarn)
+                    stderrMatches = warningRe.exec(stderr)
 
             if error isnt null or killed
                 if killed
